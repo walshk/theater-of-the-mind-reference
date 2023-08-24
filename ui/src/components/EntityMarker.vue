@@ -56,6 +56,7 @@ export default Vue.extend({
     },
     methods: {
         pickUp(event: MouseEvent): void {
+            event.preventDefault();
             this.dragging = true;
             this.lastPosition = {
                 x: event.x,

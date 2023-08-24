@@ -1,20 +1,130 @@
 <template>
-    <div class="marker-builder"></div>
+    <b-container class="marker-builder" fluid>
+        <b-row style="margin-bottom: 1rem">
+            <b-col>
+                <h3>Add New Marker</h3>
+            </b-col>
+        </b-row>
+        <b-row>
+            <b-col>
+                <b-form>
+                    <b-form-group
+                        id="input-name-group"
+                        class="marker-form-group"
+                        label="Label"
+                        label-for="marker-label"
+                    >
+                        <b-form-input
+                            id="marker-label"
+                            v-model="form.name"
+                            type="text"
+                        ></b-form-input>
+                    </b-form-group>
+                    <b-form-group
+                        id="input-color-group"
+                        class="marker-form-group"
+                        label="Color"
+                        label-for="marker-color"
+                    >
+                        <b-form-input
+                            id="marker-color"
+                            v-model="form.color"
+                            type="color"
+                        ></b-form-input>
+                    </b-form-group>
+                    <b-form-group
+                        id="input-name-group"
+                        label="Size"
+                        label-for="marker-size"
+                    >
+                        <b-form-input
+                            id="marker-size"
+                            v-model="form.size"
+                            type="range"
+                            min="20"
+                            max="150"
+                        ></b-form-input>
+                    </b-form-group>
+                </b-form>
+            </b-col>
+        </b-row>
+        <b-row style="text-align: center">
+            <b-col>
+                <svg width="100%" height="100%" viewBox="0 0 300 300">
+                    <g class="entity-marker">
+                        <circle
+                            class="border-circle"
+                            fill="black"
+                            :cx="150"
+                            :cy="150"
+                            :r="+form.size + 1"
+                        ></circle>
+                        <circle
+                            :fill="form.color"
+                            :cx="150"
+                            :cy="150"
+                            :r="+form.size"
+                        ></circle>
+                        <text
+                            class="marker-name"
+                            :x="150"
+                            :y="150"
+                            :style="`font-size: ${+form.size / 2}`"
+                            text-anchor="middle"
+                            dy=".3em"
+                        >
+                            {{ form.name }}
+                        </text>
+                    </g>
+                </svg>
+            </b-col>
+        </b-row>
+        <b-row style="text-align: center">
+            <b-col>
+                <b-button variant="success" @click="createMarker"
+                    >Add Marker</b-button
+                >
+            </b-col>
+        </b-row>
+    </b-container>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 
-import Marker from '@/models/Marker';
-
 export default Vue.extend({
     name: 'MarkerBuilder',
+    data() {
+        return {
+            form: {
+                name: '',
+                color: '#ADD8E6',
+                size: '50',
+            },
+        };
+    },
+    methods: {
+        createMarker(): void {
+            this.$emit('createMarker', this.form);
+        },
+    },
 });
 </script>
 
-<style scoped>
+<style>
 .marker-builder {
     height: 100%;
     width: 100%;
+
+    padding-top: 1rem;
+    text-align: left;
+}
+
+.marker-form-group {
+    margin-bottom: 1rem;
+}
+
+input {
+    width: 100% !important;
 }
 </style>

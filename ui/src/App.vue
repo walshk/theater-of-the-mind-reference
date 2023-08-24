@@ -31,4 +31,8 @@ body {
     height: 100%;
     width: 100%;
 }
+
+.fullHeight {
+    height: 100%;
+}
 </style>

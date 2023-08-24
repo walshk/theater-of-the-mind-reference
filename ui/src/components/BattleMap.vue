@@ -1,11 +1,11 @@
 <template>
     <b-container class="battle-map" fluid>
-        <b-row>
-            <b-col cols="auto"
-                ><button @click="addMarker">Create Marker</button></b-col
-            >
+        <b-row class="fullHeight">
+            <b-col cols="auto" class="fullHeight">
+                <MarkerBuilder @createMarker="addMarker" />
+            </b-col>
 
-            <b-col>
+            <b-col class="fullHeight" style="padding-right: 0">
                 <svg
                     class="battle-map-svg"
                     width="100%"
@@ -34,11 +34,13 @@ import BattleMap from '@/models/BattleMap';
 import Marker from '@/models/Marker';
 
 import EntityMarker from '@/components/EntityMarker.vue';
+import MarkerBuilder from './MarkerBuilder.vue';
 
 export default Vue.extend({
     name: 'BattleMap',
     components: {
         EntityMarker,
+        MarkerBuilder,
     },
     mounted() {
         this.map = new BattleMap();
@@ -53,11 +55,19 @@ export default Vue.extend({
         };
     },
     methods: {
-        addMarker(): void {
-            const test = new Marker('test', 'red', 50, 50, 20);
+        addMarker(markerForm: {
+            name: string;
+            color: string;
+            size: string;
+        }): void {
+            const { name, color, size } = markerForm;
+
+            const test = new Marker(name, color, 500, 500, +size);
             this.map.addMarker(test);
+            console.log(this.map);
         },
         onMousemove(event: MouseEvent) {
+            event.preventDefault();
             this.currentLocation = {
                 x: event.clientX,
                 y: event.clientY,

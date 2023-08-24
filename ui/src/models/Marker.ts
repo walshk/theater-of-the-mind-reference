@@ -1,4 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
 export default class Marker {
+    id: string;
     name: string;
     color: string;
     x: number;
@@ -12,6 +14,8 @@ export default class Marker {
         y: number,
         radius: number
     ) {
+        this.id = uuidv4();
+
         this.name = name;
         this.color = color;
         this.x = x;
