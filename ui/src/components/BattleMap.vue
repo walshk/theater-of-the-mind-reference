@@ -1,18 +1,30 @@
 <template>
-    <div class="battle-map">
-        <div style="height: auto">
-            <button @click="addMarker">Create Marker</button>
-        </div>
-        <div style="height: 80%">
-            <svg class="battle-map-svg" viewBox="0 0 100 100">
-                <EntityMarker
-                    v-for="(marker, index) in markers"
-                    :key="`${marker.name}-${index}`"
-                    :marker="marker"
-                />
-            </svg>
-        </div>
-    </div>
+    <b-container class="battle-map" fluid>
+        <b-row>
+            <b-col cols="auto"
+                ><button @click="addMarker">Create Marker</button></b-col
+            >
+
+            <b-col>
+                <svg
+                    class="battle-map-svg"
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 1000 1000"
+                    ref="map"
+                    @mousemove="onMousemove"
+                >
+                    <EntityMarker
+                        v-for="(marker, index) in markers"
+                        :key="`${marker.name}-${index}`"
+                        :marker="marker"
+                        :screenCTM="screenCTM"
+                        :mouseLocation="currentLocation"
+                    />
+                </svg>
+            </b-col>
+        </b-row>
+    </b-container>
 </template>
 
 <script lang="ts">
@@ -34,20 +46,31 @@ export default Vue.extend({
     data() {
         return {
             map: new BattleMap(),
+            currentLocation: {
+                x: 0,
+                y: 0,
+            },
         };
     },
     methods: {
         addMarker(): void {
-            const test = new Marker('test', 'red', 50, 50, 5);
-            console.log(test);
-            console.log(this.markers);
+            const test = new Marker('test', 'red', 50, 50, 20);
             this.map.addMarker(test);
-            console.log(this.markers);
+        },
+        onMousemove(event: MouseEvent) {
+            this.currentLocation = {
+                x: event.clientX,
+                y: event.clientY,
+            };
         },
     },
     computed: {
         markers(): Marker[] {
             return this.map.getMarkers();
+        },
+        screenCTM(): SVGMatrix | null {
+            const map = this.$refs.map as SVGGraphicsElement;
+            return map.getScreenCTM();
         },
     },
 });
@@ -61,7 +84,8 @@ export default Vue.extend({
 }
 
 .battle-map-svg {
-    height: 50%;
+    background-color: lightgrey;
+    height: 100%;
     width: 100%;
 }
 </style>

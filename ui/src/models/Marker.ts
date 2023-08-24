@@ -27,7 +27,7 @@ export default class Marker {
         this.color = color;
     }
 
-    moveEntityMarkerTo(x: number, y: number): void {
+    moveMarkerTo(x: number, y: number): void {
         this.x = x;
         this.y = y;
     }
