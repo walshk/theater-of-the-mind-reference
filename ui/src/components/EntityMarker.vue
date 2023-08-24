@@ -12,7 +12,7 @@
             fill="black"
             :cx="marker.x"
             :cy="marker.y"
-            :r="marker.radius + 1"
+            :r="marker.radius + 2"
         ></circle>
         <circle
             :fill="marker.color"
@@ -25,6 +25,7 @@
             :x="marker.x"
             :y="marker.y"
             :style="`font-size: ${marker.radius / 2}`"
+            :fill="marker.fontColor"
             text-anchor="middle"
             dy=".3em"
         >

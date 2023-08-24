@@ -7,7 +7,7 @@
         </b-row>
         <b-row>
             <b-col>
-                <b-form>
+                <b-form @submit="createMarker">
                     <b-form-group
                         id="input-name-group"
                         class="marker-form-group"
@@ -23,12 +23,24 @@
                     <b-form-group
                         id="input-color-group"
                         class="marker-form-group"
-                        label="Color"
+                        label="Marker Color"
                         label-for="marker-color"
                     >
                         <b-form-input
                             id="marker-color"
                             v-model="form.color"
+                            type="color"
+                        ></b-form-input>
+                    </b-form-group>
+                    <b-form-group
+                        id="input-font-color-group"
+                        class="marker-form-group"
+                        label="Font Color"
+                        label-for="marker-color"
+                    >
+                        <b-form-input
+                            id="marker-font-color"
+                            v-model="form.fontColor"
                             type="color"
                         ></b-form-input>
                     </b-form-group>
@@ -48,6 +60,11 @@
                 </b-form>
             </b-col>
         </b-row>
+        <b-row style="text-align: center; margin-top: 25%">
+            <b-col>
+                <h4>Marker Preview</h4>
+            </b-col>
+        </b-row>
         <b-row style="text-align: center">
             <b-col>
                 <svg width="100%" height="100%" viewBox="0 0 300 300">
@@ -57,7 +74,7 @@
                             fill="black"
                             :cx="150"
                             :cy="150"
-                            :r="+form.size + 1"
+                            :r="+form.size + 2"
                         ></circle>
                         <circle
                             :fill="form.color"
@@ -70,6 +87,7 @@
                             :x="150"
                             :y="150"
                             :style="`font-size: ${+form.size / 2}`"
+                            :fill="form.fontColor"
                             text-anchor="middle"
                             dy=".3em"
                         >
@@ -98,14 +116,18 @@ export default Vue.extend({
         return {
             form: {
                 name: '',
-                color: '#ADD8E6',
+                color: '#00BFFF',
+                fontColor: '#000',
                 size: '50',
             },
         };
     },
     methods: {
-        createMarker(): void {
+        createMarker(event: SubmitEvent | PointerEvent): void {
+            event.preventDefault();
             this.$emit('createMarker', this.form);
+
+            this.form.name = '';
         },
     },
 });

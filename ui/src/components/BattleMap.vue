@@ -58,13 +58,14 @@ export default Vue.extend({
         addMarker(markerForm: {
             name: string;
             color: string;
+            fontColor: string;
             size: string;
         }): void {
-            const { name, color, size } = markerForm;
+            const { name, color, fontColor, size } = markerForm;
 
-            const test = new Marker(name, color, 500, 500, +size);
-            this.map.addMarker(test);
-            console.log(this.map);
+            this.map.addMarker(
+                new Marker(name, color, fontColor, 500, 500, +size)
+            );
         },
         onMousemove(event: MouseEvent) {
             event.preventDefault();

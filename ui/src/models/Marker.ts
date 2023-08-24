@@ -1,15 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
 export default class Marker {
-    id: string;
-    name: string;
-    color: string;
-    x: number;
-    y: number;
-    radius: number;
+    public id: string;
+    public name: string;
+    public color: string;
+    public fontColor: string;
+    public x: number;
+    public y: number;
+    public radius: number;
 
     constructor(
         name: string,
         color: string,
+        fontColor: string,
         x: number,
         y: number,
         radius: number
@@ -18,6 +20,7 @@ export default class Marker {
 
         this.name = name;
         this.color = color;
+        this.fontColor = fontColor;
         this.x = x;
         this.y = y;
         this.radius = radius;
