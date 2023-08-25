@@ -20,6 +20,7 @@
                         :marker="marker"
                         :screenCTM="screenCTM"
                         :mouseLocation="currentLocation"
+                        @markerMoved="markerMoved"
                     />
                 </svg>
             </b-col>
@@ -32,9 +33,12 @@ import Vue from 'vue';
 
 import BattleMap from '@/models/BattleMap';
 import Marker from '@/models/Marker';
+import MarkerMovement from '@/models/MarkerMovement';
 
 import EntityMarker from '@/components/EntityMarker.vue';
 import MarkerBuilder from './MarkerBuilder.vue';
+
+import socket from '@/socket';
 
 export default Vue.extend({
     name: 'BattleMap',
@@ -44,6 +48,22 @@ export default Vue.extend({
     },
     mounted() {
         this.map = new BattleMap();
+        socket.on('state', (stateString: string) => {
+            console.log('received state', JSON.parse(stateString));
+            this.map.setState(stateString);
+        });
+
+        socket.on('markerMoved', (markerMovementString: string) => {
+            console.log('marker moved', markerMovementString);
+            const movement: MarkerMovement = JSON.parse(markerMovementString);
+            const movedMarker = this.map.markers.find(
+                (m) => m.id === movement.id
+            );
+
+            if (movedMarker) {
+                movedMarker.moveMarkerToSmooth(movement.x, movement.y);
+            }
+        });
     },
     data() {
         return {
@@ -66,6 +86,7 @@ export default Vue.extend({
             this.map.addMarker(
                 new Marker(name, color, fontColor, 500, 500, +size)
             );
+            socket.emit('setState', this.map.getState());
         },
         onMousemove(event: MouseEvent) {
             event.preventDefault();
@@ -73,6 +94,13 @@ export default Vue.extend({
                 x: event.clientX,
                 y: event.clientY,
             };
+        },
+        markerMoved(markerMovement: MarkerMovement) {
+            const data = {
+                movement: JSON.stringify(markerMovement),
+                state: JSON.stringify(this.map.getState()),
+            };
+            socket.emit('moveMarker', JSON.stringify(data));
         },
     },
     computed: {

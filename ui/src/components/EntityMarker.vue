@@ -82,6 +82,11 @@ export default Vue.extend({
                 x: event.x,
                 y: event.y,
             };
+            this.$emit('markerMoved', {
+                id: this.marker.id,
+                x: this.marker.x,
+                y: this.marker.y,
+            });
         },
     },
     computed: {

@@ -60,11 +60,6 @@
                 </b-form>
             </b-col>
         </b-row>
-        <b-row style="text-align: center; margin-top: 25%">
-            <b-col>
-                <h4>Marker Preview</h4>
-            </b-col>
-        </b-row>
         <b-row style="text-align: center">
             <b-col>
                 <svg width="100%" height="100%" viewBox="0 0 300 300">

@@ -12,6 +12,8 @@
         "bootstrap-vue": "^2.23.1",
         "core-js": "^3.8.3",
         "node-polyfill-webpack-plugin": "^2.0.1",
+        "socket.io": "^4.7.2",
+        "socket.io-client": "^4.7.2",
         "uuid": "^9.0.0",
         "vue": "^2.6.14"
     },

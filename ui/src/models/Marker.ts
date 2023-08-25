@@ -14,9 +14,10 @@ export default class Marker {
         fontColor: string,
         x: number,
         y: number,
-        radius: number
+        radius: number,
+        id?: string
     ) {
-        this.id = uuidv4();
+        this.id = id ?? uuidv4();
 
         this.name = name;
         this.color = color;
@@ -37,5 +38,24 @@ export default class Marker {
     moveMarkerTo(x: number, y: number): void {
         this.x = x;
         this.y = y;
+    }
+
+    moveMarkerToSmooth(x: number, y: number, seconds?: number): void {
+        const xDistance = x - this.x;
+        const yDistance = y - this.y;
+
+        const xIncrement = xDistance / 100;
+        const yIncrement = yDistance / 100;
+
+        let count = 0;
+        const interval = setInterval(() => {
+            if (count === 100) {
+                clearInterval(interval);
+            } else {
+                this.x += xIncrement;
+                this.y += yIncrement;
+                count += 1;
+            }
+        }, 1);
     }
 }
