@@ -40,7 +40,7 @@ export default class Marker {
         this.y = y;
     }
 
-    moveMarkerToSmooth(x: number, y: number, seconds?: number): void {
+    moveMarkerToSmooth(x: number, y: number): void {
         const xDistance = x - this.x;
         const yDistance = y - this.y;
 
@@ -57,5 +57,17 @@ export default class Marker {
                 count += 1;
             }
         }, 1);
+    }
+
+    toString(): string {
+        return JSON.stringify({
+            id: this.id,
+            name: this.name,
+            color: this.color,
+            fontColor: this.fontColor,
+            x: this.x,
+            y: this.y,
+            radius: this.radius,
+        });
     }
 }

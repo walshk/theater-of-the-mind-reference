@@ -5,6 +5,7 @@
         @mousedown="pickUp"
         @mousemove="move"
         @mouseup="putDown"
+        @click.right="remove"
         ref="marker"
     >
         <circle
@@ -87,6 +88,10 @@ export default Vue.extend({
                 x: this.marker.x,
                 y: this.marker.y,
             });
+        },
+        remove(event: MouseEvent): void {
+            event.preventDefault();
+            this.$emit('removeMarker', this.marker.id);
         },
     },
     computed: {
