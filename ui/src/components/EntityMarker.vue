@@ -60,6 +60,10 @@ export default Vue.extend({
         async pickUp(event: MouseEvent): Promise<void> {
             event.preventDefault();
 
+            if (event.button === 2) {
+                return;
+            }
+
             this.dragging = true;
             this.lastPosition = {
                 x: event.x,
