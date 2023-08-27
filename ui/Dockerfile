@@ -1,6 +1,7 @@
 FROM nginx:alpine
 COPY ./dist /usr/share/nginx/html
 
-COPY project.conf /etc/nginx/conf.d/project.conf
+RUN rm /etc/nginx/conf.d/default.conf
+COPY project.conf /etc/nginx/conf.d/default.conf
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
