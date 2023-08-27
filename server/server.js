@@ -18,6 +18,7 @@ app.use(
 
 const server = http.createServer(app);
 const io = new Server(server, {
+    path: '/socket.io',
     cors: {
         origin: 'http://localhost:8080',
         methods: ['GET', 'POST'],
