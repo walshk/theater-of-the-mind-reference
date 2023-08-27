@@ -30,6 +30,7 @@ services:
         links:
             - cache
     cache:
+        container_name: tomr-cache
         image: redis:6.2-alpine
         restart: always
         command: redis-server --save 20 1 --loglevel warning

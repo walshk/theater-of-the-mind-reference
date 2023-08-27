@@ -9,8 +9,6 @@ const client = createClient({
     },
 });
 
-const MARKER_SET_KEY = 'data::markers';
-
 client.on('error', (err) => console.log('Redis Client Error', err));
 
 await client.connect();
@@ -24,30 +22,13 @@ async function dbGet(key) {
     return val;
 }
 
-async function dbSetAdd(key, values) {
-    try {
-        await client.sAdd(key, values);
-    } catch (err) {
-        console.error(`Error adding members to set ${key}: ${err.message}`);
-    }
+async function dbKeys(pattern) {
+    const keys = await client.keys(pattern);
+    return keys;
 }
 
-async function dbSetRemove(key, values) {
-    try {
-        await client.sRem(key, values);
-    } catch (err) {
-        console.error(`Error removing members from set ${key}: ${err.message}`);
-    }
+async function dbDelete(key) {
+    await client.del(key);
 }
 
-async function dbSetMembers(key) {
-    try {
-        const members = client.sMembers(key);
-        return members;
-    } catch (err) {
-        console.error(`Error fetching members of set: ${err.message}`);
-        return [];
-    }
-}
-
-export { dbGet, dbSet, dbSetAdd, dbSetRemove, dbSetMembers, MARKER_SET_KEY };
+export { dbGet, dbSet, dbDelete, dbKeys };
