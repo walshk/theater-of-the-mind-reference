@@ -51,6 +51,14 @@ export default Vue.extend({
     },
     mounted() {
         this.map = new BattleMap();
+
+        socket.on('markerError', (message: string) => {
+            this.$bvToast.toast(message, {
+                title: 'Marker Error',
+                variant: 'warning',
+            });
+        });
+
         socket.on('addMarker', (markerString: string) => {
             console.log('received marker', JSON.parse(markerString));
 

@@ -4,6 +4,7 @@ const REDIS_URL = 'redis://localhost:6379';
 const client = createClient({ url: REDIS_URL });
 
 const MARKER_SET_KEY = 'data::markers';
+const LOCKED_SET_KEY = 'data::locked';
 
 client.on('error', (err) => console.log('Redis Client Error', err));
 
@@ -44,4 +45,12 @@ async function dbSetMembers(key) {
     }
 }
 
-export { dbGet, dbSet, dbSetAdd, dbSetRemove, dbSetMembers, MARKER_SET_KEY };
+export {
+    dbGet,
+    dbSet,
+    dbSetAdd,
+    dbSetRemove,
+    dbSetMembers,
+    MARKER_SET_KEY,
+    LOCKED_SET_KEY,
+};
