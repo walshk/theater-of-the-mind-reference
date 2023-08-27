@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const URL = `http://${window.location.host}`;
+const URL = `https://${window.location.host}`;
 
 const socket = io(URL);
 
