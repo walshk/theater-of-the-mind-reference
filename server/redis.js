@@ -35,6 +35,7 @@ async function dbKeys(pattern) {
 }
 
 async function dbDelete(key) {
+    console.log('calling delete on', key);
     await client.del(key);
     return true;
 }

@@ -25,7 +25,11 @@ export async function getMarkers(socket) {
 }
 
 export async function removeMarker(socket, markerId) {
+    console.log({
+        markerId,
+    });
     await dbDelete(`${MARKER_PREFIX}${markerId}`);
+    console.log('should have deleted', markerId);
     socket.broadcast.emit('removeMarker', markerId);
 }
 
