@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 
 const URL = `http://${window.location.host}`;
 
-const socket = io(URL, { path: '/api' });
+const socket = io(URL);
 
 socket.on('connect', () => {
     socket.emit('getMarkers');
