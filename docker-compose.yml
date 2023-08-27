@@ -4,7 +4,6 @@ services:
         container_name: tomr-ui
         build:
             context: ./ui/
-            target: prod
         image: tomr-ui
         depends_on:
             - cache
