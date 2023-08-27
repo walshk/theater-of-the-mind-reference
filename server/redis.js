@@ -15,6 +15,7 @@ await client.connect();
 
 async function dbSet(key, val) {
     await client.set(key, val);
+    return true;
 }
 
 async function dbGet(key) {
@@ -29,6 +30,7 @@ async function dbKeys(pattern) {
 
 async function dbDelete(key) {
     await client.del(key);
+    return true;
 }
 
 export { dbGet, dbSet, dbDelete, dbKeys };

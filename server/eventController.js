@@ -26,9 +26,12 @@ export async function getMarkers(socket) {
 
 export async function removeMarker(socket, markerId) {
     const markerKeys = await dbKeys(`${MARKER_PREFIX}*`);
-    const keyToDelete = markerKeys.find((k) =>
-        k.includes(`"id":"${markerId}"`)
-    );
+    const keyToDelete = markerKeys.find((k) => k.includes(markerId));
+
+    console.log({
+        markerKeys,
+        keyToDelete,
+    });
 
     if (keyToDelete) {
         await dbDelete(keyToDelete);
