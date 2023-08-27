@@ -1,8 +1,8 @@
 import { io } from 'socket.io-client';
 
-const URL = `http://${window.location.host}/socket.io`;
+const URL = `http://${window.location.host}`;
 
-const socket = io(URL);
+const socket = io(URL, { path: '/api' });
 
 socket.on('connect', () => {
     socket.emit('getMarkers');
