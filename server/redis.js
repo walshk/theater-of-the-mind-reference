@@ -24,6 +24,7 @@ async function dbGet(key) {
 }
 
 async function dbGetMultiple(keys) {
+    console.log('calling mGet with', keys);
     const values = await client.mGet(keys);
     return values;
 }

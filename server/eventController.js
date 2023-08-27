@@ -14,10 +14,13 @@ export async function addMarker(socket, markerString) {
 
 export async function getMarkers(socket) {
     const markerKeys = await dbKeys(`${MARKER_PREFIX}*`);
-    const markers = await dbGetMultiple(markerKeys);
 
-    for (let i = 0; i < markers.length; i++) {
-        socket.emit('addMarker', markers[i]);
+    if (markerKeys.length > 0) {
+        const markers = await dbGetMultiple(markerKeys);
+
+        for (let i = 0; i < markers.length; i++) {
+            socket.emit('addMarker', markers[i]);
+        }
     }
 }
 
