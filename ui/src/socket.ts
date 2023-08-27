@@ -5,6 +5,7 @@ const URL = `https://${window.location.host}`;
 const socket = io(URL);
 
 socket.on('connect', () => {
+    console.log('connected to server');
     socket.emit('getMarkers');
 });
 
