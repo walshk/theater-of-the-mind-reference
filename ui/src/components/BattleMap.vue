@@ -60,8 +60,6 @@ export default Vue.extend({
         });
 
         socket.on('addMarker', (markerString: string) => {
-            console.log('received marker', JSON.parse(markerString));
-
             const mData = JSON.parse(markerString);
             const marker = new Marker(
                 mData.name,

@@ -24,7 +24,6 @@ async function dbGet(key) {
 }
 
 async function dbGetMultiple(keys) {
-    console.log('calling mGet with', keys);
     const values = await client.mGet(keys);
     return values;
 }
@@ -35,7 +34,6 @@ async function dbKeys(pattern) {
 }
 
 async function dbDelete(key) {
-    console.log('calling delete on', key);
     await client.del(key);
     return true;
 }
