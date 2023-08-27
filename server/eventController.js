@@ -3,29 +3,7 @@ import {
     dbSetRemove,
     dbSetMembers,
     MARKER_SET_KEY,
-    LOCKED_SET_KEY,
 } from './redis.js';
-
-export async function isMarkerLocked(markerString) {
-    const lockedMarkers = await dbSetMembers(LOCKED_SET_KEY);
-    console.log('got locked markers', lockedMarkers);
-    return lockedMarkers.includes(markerString);
-}
-
-export async function lockMarker(markerString) {
-    await dbSetAdd(LOCKED_SET_KEY, markerString);
-
-    setTimeout(() => {
-        dbSetRemove(markerString);
-    }, 5000);
-
-    console.log('marker locked: ', JSON.parse(markerString).id);
-}
-
-export async function unlockMarker(markerString) {
-    await dbSetRemove(LOCKED_SET_KEY, markerString);
-    console.log('marker unlocked: ', JSON.parse(markerString).id);
-}
 
 export async function addMarker(socket, markerString) {
     socket.broadcast.emit('addMarker', markerString);

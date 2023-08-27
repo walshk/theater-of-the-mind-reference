@@ -39,8 +39,6 @@
 import Vue from 'vue';
 
 import Marker from '@/models/Marker';
-import api from '@/api';
-import { AxiosError } from 'axios';
 
 export default Vue.extend({
     name: 'EntityMarker',
@@ -61,19 +59,6 @@ export default Vue.extend({
     methods: {
         async pickUp(event: MouseEvent): Promise<void> {
             event.preventDefault();
-
-            try {
-                await api.post('/lockMarker', {
-                    markerString: this.marker.toString(),
-                });
-            } catch (err) {
-                const error = err as AxiosError;
-                this.$bvToast.toast(error.message, {
-                    title: 'Unable to Pick Up Marker',
-                    variant: 'warning',
-                });
-                return;
-            }
 
             this.dragging = true;
             this.lastPosition = {
@@ -103,10 +88,6 @@ export default Vue.extend({
                 id: this.marker.id,
                 x: this.marker.x,
                 y: this.marker.y,
-            });
-
-            await api.post('/unlockMarker', {
-                markerString: this.marker.toString(),
             });
         },
         remove(event: MouseEvent): void {

@@ -1,10 +1,15 @@
 import { createClient } from 'redis';
 
-const REDIS_URL = 'redis://localhost:6379';
-const client = createClient({ url: REDIS_URL });
+const REDIS_HOST = process.env.REDIS_HOST ?? 'localhost';
+const REDIS_PORT = process.env.REDIS_PORT ?? 6379;
+const client = createClient({
+    socket: {
+        host: REDIS_HOST,
+        port: REDIS_PORT,
+    },
+});
 
 const MARKER_SET_KEY = 'data::markers';
-const LOCKED_SET_KEY = 'data::locked';
 
 client.on('error', (err) => console.log('Redis Client Error', err));
 
