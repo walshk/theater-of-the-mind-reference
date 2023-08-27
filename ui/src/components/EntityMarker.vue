@@ -83,6 +83,10 @@ export default Vue.extend({
             this.marker.moveMarkerTo(newX, newY);
         },
         async putDown(event: MouseEvent): Promise<void> {
+            if (!this.dragging) {
+                return;
+            }
+
             this.dragging = false;
             this.lastPosition = {
                 x: event.x,
