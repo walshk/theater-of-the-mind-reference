@@ -50,12 +50,4 @@ async function dbSetMembers(key) {
     }
 }
 
-export {
-    dbGet,
-    dbSet,
-    dbSetAdd,
-    dbSetRemove,
-    dbSetMembers,
-    MARKER_SET_KEY,
-    LOCKED_SET_KEY,
-};
+export { dbGet, dbSet, dbSetAdd, dbSetRemove, dbSetMembers, MARKER_SET_KEY };
