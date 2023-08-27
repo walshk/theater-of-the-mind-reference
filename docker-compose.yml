@@ -19,8 +19,6 @@ services:
         image: tomr-server
         depends_on:
             - cache
-        ports:
-            - 3333:3333
         environment:
             NODE_ENV: production
             REDIS_HOST: cache
@@ -30,8 +28,6 @@ services:
     cache:
         image: redis:6.2-alpine
         restart: always
-        ports:
-            - '6379:6379'
         command: redis-server --save 20 1 --loglevel warning
         volumes:
             - cache:/data
