@@ -87,7 +87,7 @@ export default Vue.extend({
         });
 
         socket.on('removeMarker', (markerId: string) => {
-            this.removeMarker(markerId);
+            this.map.removeMarker(markerId);
         });
     },
     data() {
