@@ -4,7 +4,7 @@ services:
         container_name: tomr-ui
         build:
             context: ./ui/
-            target: production
+            target: prod
         image: tomr-ui
         depends_on:
             - cache
@@ -17,7 +17,6 @@ services:
         container_name: tomr-server
         build:
             context: ./server/
-            target: production
         image: tormr-server
         depends_on:
             - cache
