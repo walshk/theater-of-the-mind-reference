@@ -18,19 +18,10 @@ export async function getMarkers(socket) {
 }
 
 export async function removeMarker(socket, markerId) {
+    socket.broadcast.emit('removeMarker', markerId);
     const allMarkers = await dbSetMembers(MARKER_SET_KEY);
     const existingMarkerString = allMarkers.find((m) => m.includes(markerId));
-
-    const isLocked = await isMarkerLocked(existingMarkerString);
-    if (isLocked) {
-        socket.emit(
-            'markerError',
-            'Unable to remove marker. It is currently being moved by another user.'
-        );
-    } else {
-        socket.broadcast.emit('removeMarker', markerId);
-        await dbSetRemove(MARKER_SET_KEY, existingMarkerString);
-    }
+    await dbSetRemove(MARKER_SET_KEY, existingMarkerString);
 }
 
 export async function updateMarker(socket, markerMovementString) {
