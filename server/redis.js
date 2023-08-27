@@ -23,6 +23,11 @@ async function dbGet(key) {
     return val;
 }
 
+async function dbGetMultiple(keys) {
+    const values = await client.mGet(keys);
+    return values;
+}
+
 async function dbKeys(pattern) {
     const keys = await client.keys(pattern);
     return keys;
@@ -33,4 +38,4 @@ async function dbDelete(key) {
     return true;
 }
 
-export { dbGet, dbSet, dbDelete, dbKeys };
+export { dbGet, dbGetMultiple, dbSet, dbDelete, dbKeys };

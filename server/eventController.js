@@ -1,23 +1,20 @@
-import { dbSet, dbDelete, dbKeys } from './redis.js';
+import { dbGet, dbGetMultiple, dbSet, dbDelete, dbKeys } from './redis.js';
 
 const MARKER_PREFIX = 'marker::';
 
 function buildMarkerKey(markerString) {
-    return `${MARKER_PREFIX}${markerString}`;
-}
-
-function getMarkerStringFromKey(key) {
-    return key.substring(MARKER_PREFIX.length);
+    const markerId = JSON.parse(markerString).id;
+    return `${MARKER_PREFIX}${markerId}`;
 }
 
 export async function addMarker(socket, markerString) {
     socket.broadcast.emit('addMarker', markerString);
-    await dbSet(buildMarkerKey(markerString), 1);
+    await dbSet(buildMarkerKey(markerString), markerString);
 }
 
 export async function getMarkers(socket) {
     const markerKeys = await dbKeys(`${MARKER_PREFIX}*`);
-    const markers = markerKeys.map(getMarkerStringFromKey);
+    const markers = await dbGetMultiple(markerKeys);
 
     for (let i = 0; i < markers.length; i++) {
         socket.emit('addMarker', markers[i]);
@@ -25,18 +22,7 @@ export async function getMarkers(socket) {
 }
 
 export async function removeMarker(socket, markerId) {
-    const markerKeys = await dbKeys(`${MARKER_PREFIX}*`);
-    const keyToDelete = markerKeys.find((k) => k.includes(markerId));
-
-    console.log({
-        markerKeys,
-        keyToDelete,
-    });
-
-    if (keyToDelete) {
-        await dbDelete(keyToDelete);
-    }
-
+    await dbDelete(`${MARKER_PREFIX}${markerId}`);
     socket.broadcast.emit('removeMarker', markerId);
 }
 
@@ -45,15 +31,12 @@ export async function updateMarker(socket, markerMovementString) {
 
     const { id, x, y } = JSON.parse(markerMovementString);
 
-    const markerKeys = await dbKeys(`${MARKER_PREFIX}*`);
-    const keyToUpdate = markerKeys.find((k) => k.includes(`"id":"${id}"`));
+    const markerKey = `${MARKER_PREFIX}${id}`;
 
-    const markerString = getMarkerStringFromKey(keyToUpdate);
-    const existingMarkerData = JSON.parse(markerString);
-
+    const existingMarkerString = await dbGet(markerKey);
+    const existingMarkerData = JSON.parse(existingMarkerString);
     const newMarkerData = Object.assign(existingMarkerData, { x, y });
-    const newMarkerKey = buildMarkerKey(JSON.stringify(newMarkerData));
+    const newMarkerString = JSON.stringify(newMarkerData);
 
-    await dbDelete(keyToUpdate);
-    await dbSet(newMarkerKey, 1);
+    await dbSet(markerKey, newMarkerString);
 }
