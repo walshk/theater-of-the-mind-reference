@@ -12,15 +12,15 @@
                     viewBox="0 0 1000 1000"
                     ref="map"
                     @mousemove="onMousemove"
+                    @mouseup="putDownMarker"
                 >
                     <EntityMarker
                         v-for="(marker, index) in markers"
                         :key="`${marker.name}-${index}`"
                         :marker="marker"
-                        :screenCTM="screenCTM"
-                        :mouseLocation="currentLocation"
-                        @markerMoved="markerMoved"
+                        :dragging="isDragging"
                         @removeMarker="removeMarker"
+                        @pickUp="pickUpMarker"
                     />
                 </svg>
             </b-col>
@@ -91,6 +91,8 @@ export default Vue.extend({
     data() {
         return {
             map: new BattleMap(),
+            selectedMarker: undefined as Marker | undefined,
+            isDragging: false,
             currentLocation: {
                 x: 0,
                 y: 0,
@@ -113,6 +115,16 @@ export default Vue.extend({
         },
         onMousemove(event: MouseEvent): void {
             event.preventDefault();
+
+            if (this.selectedMarker && this.isDragging && this.screenCTM) {
+                const newX =
+                    (event.clientX - this.screenCTM.e) / this.screenCTM.a;
+                const newY =
+                    (event.clientY - this.screenCTM.f) / this.screenCTM.d;
+
+                this.selectedMarker.moveMarkerTo(newX, newY);
+            }
+
             this.currentLocation = {
                 x: event.clientX,
                 y: event.clientY,
@@ -124,6 +136,23 @@ export default Vue.extend({
         removeMarker(markerId: string): void {
             this.map.removeMarker(markerId);
             socket.emit('removeMarker', markerId);
+        },
+        pickUpMarker(marker: Marker): void {
+            this.selectedMarker = marker;
+            this.isDragging = true;
+        },
+        putDownMarker(): void {
+            if (this.selectedMarker && this.isDragging) {
+                this.isDragging = false;
+
+                const movement = {
+                    id: this.selectedMarker.id,
+                    x: this.selectedMarker.x,
+                    y: this.selectedMarker.y,
+                };
+
+                socket.emit('moveMarker', JSON.stringify(movement));
+            }
         },
     },
     computed: {

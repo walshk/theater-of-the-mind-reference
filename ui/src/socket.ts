@@ -1,6 +1,9 @@
 import { io } from 'socket.io-client';
 
-const URL = `https://${window.location.host}`;
+const URL =
+    process.env.NODE_ENV === 'production'
+        ? `https://${window.location.host}`
+        : 'ws://localhost:3333';
 
 const socket = io(URL);
 
