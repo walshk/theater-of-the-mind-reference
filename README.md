@@ -1,7 +1,3 @@
-# theater-of-the-mind-reference
+# Theater of the Mind Reference
 
-App for understanding relative entity positions while running tabletop RPG combat via theater of the mind
-
-| Frontend |  Backend   | Database |
-| :------: | :--------: | :------: |
-|  Vue.js  | Express.js |  Redis   |
+_For those 5e scenarios where you don't need a whole battlemap but also have a hard time remembering where everyone is in your head._
