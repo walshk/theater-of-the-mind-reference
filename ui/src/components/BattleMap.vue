@@ -107,6 +107,10 @@ export default Vue.extend({
                 markerToUpdate.setRadius(updatedMarker.radius);
             }
         });
+
+        window.addEventListener('resize', () => {
+            this.pageResized = !this.pageResized;
+        });
     },
     data() {
         return {
@@ -118,6 +122,7 @@ export default Vue.extend({
                 x: 0,
                 y: 0,
             },
+            pageResized: false,
         };
     },
     methods: {
@@ -197,6 +202,7 @@ export default Vue.extend({
             return this.map.getMarkers();
         },
         screenCTM(): SVGMatrix | null {
+            this.pageResized;
             const map = this.$refs.map as SVGGraphicsElement;
             return map.getScreenCTM();
         },
