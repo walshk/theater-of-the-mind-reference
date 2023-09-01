@@ -7,7 +7,7 @@
         </b-row>
         <b-row>
             <b-col>
-                <b-form @submit="createMarker">
+                <b-form @submit="submit">
                     <b-form-group
                         id="input-name-group"
                         class="marker-form-group"
@@ -49,13 +49,11 @@
                         label="Size"
                         label-for="marker-size"
                     >
-                        <b-form-input
+                        <b-form-select
                             id="marker-size"
                             v-model="form.size"
-                            type="range"
-                            min="20"
-                            max="150"
-                        ></b-form-input>
+                            :options="sizeOptions"
+                        ></b-form-select>
                     </b-form-group>
                 </b-form>
             </b-col>
@@ -94,8 +92,26 @@
         </b-row>
         <b-row style="text-align: center">
             <b-col>
-                <b-button variant="success" @click="createMarker"
+                <b-button v-if="!marker" variant="success" @click="createMarker"
                     >Add Marker</b-button
+                >
+                <b-button v-if="marker" variant="success" @click="updateMarker">
+                    Update Marker
+                </b-button>
+                <b-button
+                    v-if="marker"
+                    variant="secondary"
+                    @click="deselectMarker"
+                    style="margin-left: 1rem"
+                >
+                    Cancel
+                </b-button>
+            </b-col>
+        </b-row>
+        <b-row style="text-align: center; margin-top: 3rem">
+            <b-col>
+                <b-button v-if="marker" variant="danger" @click="removeMarker"
+                    >Remove Marker</b-button
                 >
             </b-col>
         </b-row>
@@ -103,26 +119,88 @@
 </template>
 
 <script lang="ts">
+import Marker from '@/models/Marker';
 import Vue from 'vue';
 
 export default Vue.extend({
     name: 'MarkerBuilder',
+    props: {
+        marker: Marker,
+    },
+    mounted() {
+        if (this.marker) {
+            this.form.name = this.marker.name;
+            this.form.color = this.marker.color;
+            this.form.fontColor = this.marker.fontColor;
+            this.form.size = this.marker.radius;
+        }
+    },
     data() {
         return {
             form: {
                 name: '',
                 color: '#00BFFF',
                 fontColor: '#000',
-                size: '50',
+                size: 50,
             },
+            formDefaults: {
+                name: '',
+                color: '#00BFFF',
+                fontColor: '#000',
+                size: 50,
+            },
+            sizeOptions: [
+                { text: 'Tiny', value: 25 },
+                { text: 'Small/Medium', value: 50 },
+                { text: 'Large', value: 100 },
+                { text: 'Huge', value: 150 },
+                { text: 'Gargantuan', value: 200 },
+            ],
         };
     },
     methods: {
-        createMarker(event: SubmitEvent | PointerEvent): void {
+        submit(event: SubmitEvent) {
             event.preventDefault();
+
+            if (this.marker) {
+                this.updateMarker();
+            } else {
+                this.createMarker();
+            }
+        },
+        createMarker(): void {
             this.$emit('createMarker', this.form);
 
             this.form.name = '';
+        },
+        updateMarker(): void {
+            this.marker.setName(this.form.name);
+            this.marker.setColor(this.form.color);
+            this.marker.setFontColor(this.form.fontColor);
+            this.marker.setRadius(+this.form.size);
+
+            this.$emit('updateMarker');
+            this.form = Object.assign({}, this.formDefaults);
+        },
+        removeMarker(): void {
+            if (this.marker) {
+                this.$emit('removeMarker', this.marker.id);
+                this.form = Object.assign({}, this.formDefaults);
+            }
+        },
+        deselectMarker(): void {
+            this.$emit('cancelEdit');
+            this.form = Object.assign({}, this.formDefaults);
+        },
+    },
+    watch: {
+        marker: function (newMarker: Marker | undefined) {
+            if (newMarker) {
+                this.form.name = newMarker.name;
+                this.form.color = newMarker.color;
+                this.form.fontColor = newMarker.fontColor;
+                this.form.size = newMarker.radius;
+            }
         },
     },
 });

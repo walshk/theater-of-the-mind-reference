@@ -3,7 +3,7 @@
         class="entity-marker"
         :style="markerStyles"
         @mousedown="pickUp"
-        @click.right="remove"
+        @click.right="edit"
         ref="marker"
     >
         <circle
@@ -52,9 +52,9 @@ export default Vue.extend({
                 this.$emit('pickUp', this.marker);
             }
         },
-        remove(event: MouseEvent): void {
+        edit(event: MouseEvent): void {
             event.preventDefault();
-            this.$emit('removeMarker', this.marker.id);
+            this.$emit('editMarker', this.marker);
         },
     },
     computed: {

@@ -35,6 +35,14 @@ export default class Marker {
         this.color = color;
     }
 
+    setFontColor(color: string): void {
+        this.fontColor = color;
+    }
+
+    setRadius(radius: number): void {
+        this.radius = radius;
+    }
+
     moveMarkerTo(x: number, y: number): void {
         this.x = x;
         this.y = y;

@@ -19,13 +19,19 @@
                         :key="`${marker.name}-${index}`"
                         :marker="marker"
                         :dragging="isDragging"
-                        @removeMarker="removeMarker"
+                        @editMarker="editMarker"
                         @pickUp="pickUpMarker"
                     />
                 </svg>
             </b-col>
             <b-col lg="3" class="fullHeight d-none d-lg-block">
-                <MarkerBuilder @createMarker="addMarker" />
+                <MarkerBuilder
+                    :marker="editingMarker"
+                    @createMarker="addMarker"
+                    @updateMarker="updateMarker"
+                    @cancelEdit="cancelEditMarker"
+                    @removeMarker="removeMarker"
+                />
             </b-col>
         </b-row>
     </b-container>
@@ -87,11 +93,26 @@ export default Vue.extend({
         socket.on('removeMarker', (markerId: string) => {
             this.map.removeMarker(markerId);
         });
+
+        socket.on('updateMarkerTraits', (markerString: string) => {
+            const updatedMarker = JSON.parse(markerString);
+            const markerToUpdate = this.map.markers.find(
+                (m) => m.id === updatedMarker.id
+            );
+
+            if (markerToUpdate) {
+                markerToUpdate.setName(updatedMarker.name);
+                markerToUpdate.setColor(updatedMarker.color);
+                markerToUpdate.setFontColor(updatedMarker.fontColor);
+                markerToUpdate.setRadius(updatedMarker.radius);
+            }
+        });
     },
     data() {
         return {
             map: new BattleMap(),
             selectedMarker: undefined as Marker | undefined,
+            editingMarker: undefined as Marker | undefined,
             isDragging: false,
             currentLocation: {
                 x: 0,
@@ -135,6 +156,7 @@ export default Vue.extend({
         },
         removeMarker(markerId: string): void {
             this.map.removeMarker(markerId);
+            this.editingMarker = undefined;
             socket.emit('removeMarker', markerId);
         },
         pickUpMarker(marker: Marker): void {
@@ -153,6 +175,21 @@ export default Vue.extend({
 
                 socket.emit('moveMarker', JSON.stringify(movement));
             }
+        },
+        editMarker(marker: Marker): void {
+            this.editingMarker = marker;
+        },
+        updateMarker(): void {
+            if (!this.editingMarker) {
+                return;
+            }
+
+            const markerString = JSON.stringify(this.editingMarker);
+            this.editingMarker = undefined;
+            socket.emit('updateMarkerTraits', markerString);
+        },
+        cancelEditMarker(): void {
+            this.editingMarker = undefined;
         },
     },
     computed: {

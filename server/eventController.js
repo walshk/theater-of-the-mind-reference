@@ -43,3 +43,18 @@ export async function updateMarker(socket, markerMovementString) {
 
     await dbSet(markerKey, newMarkerString);
 }
+
+export async function updateMarkerTraits(socket, markerString) {
+    socket.broadcast.emit('updateMarkerTraits', markerString);
+
+    const markerWithUpdates = JSON.parse(markerString);
+
+    const markerKey = `${MARKER_PREFIX}${markerWithUpdates.id}`;
+
+    const existingMarkerString = await dbGet(markerKey);
+    const existingMarkerData = JSON.parse(existingMarkerString);
+    const newMarkerData = Object.assign(existingMarkerData, markerWithUpdates);
+    const newMarkerString = JSON.stringify(newMarkerData);
+
+    await dbSet(markerKey, newMarkerString);
+}

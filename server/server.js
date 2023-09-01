@@ -7,6 +7,7 @@ import {
     getMarkers,
     updateMarker,
     removeMarker,
+    updateMarkerTraits,
 } from './eventController.js';
 
 const app = express();
@@ -35,6 +36,10 @@ io.on('connection', async (socket) => {
 
     socket.on('moveMarker', async (markerMovementString) => {
         await updateMarker(socket, markerMovementString);
+    });
+
+    socket.on('updateMarkerTraits', async (markerString) => {
+        await updateMarkerTraits(socket, markerString);
     });
 
     socket.on('removeMarker', async (markerId) => {
