@@ -32,10 +32,10 @@
                     </defs>
 
                     <rect
-                        x="-1000"
-                        y="0"
-                        width="3000"
-                        height="1000"
+                        x="-2000"
+                        y="-2000"
+                        width="4000"
+                        height="4000"
                         fill="url(#grid)"
                     />
                     <EntityMarker
