@@ -235,6 +235,8 @@ export default Vue.extend({
             this.$emit('createMarker', this.form);
 
             this.form.name = '';
+            this.form.condition = '';
+            this.form.height = 0;
         },
 
         updateMarker(): void {
