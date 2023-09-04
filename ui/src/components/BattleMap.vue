@@ -4,6 +4,7 @@
             <b-col
                 class="fullHeight"
                 style="padding-left: 0; padding-right: 1px"
+                id="battleMapCol"
             >
                 <svg
                     class="battle-map-svg"
@@ -14,6 +15,29 @@
                     @mousemove="onMousemove"
                     @mouseup="putDownMarker"
                 >
+                    <defs>
+                        <pattern
+                            id="grid"
+                            width="80"
+                            height="80"
+                            patternUnits="userSpaceOnUse"
+                        >
+                            <path
+                                d="M 80 0 L 0 0 0 80"
+                                fill="none"
+                                stroke="gray"
+                                stroke-width="1"
+                            />
+                        </pattern>
+                    </defs>
+
+                    <rect
+                        x="-1000"
+                        y="0"
+                        width="3000"
+                        height="1000"
+                        fill="url(#grid)"
+                    />
                     <EntityMarker
                         v-for="(marker, index) in markers"
                         :key="`${marker.name}-${index}`"
@@ -23,6 +47,16 @@
                         @pickUp="pickUpMarker"
                     />
                 </svg>
+                <div
+                    id="trashArea"
+                    ref="trashArea"
+                    :style="trashAreaStyle"
+                    @mousemove="onMousemove"
+                    @mouseup="putDownMarker"
+                >
+                    <b-icon-trash style="margin-right: 1rem" />
+                    <span>Drag Here to Delete</span>
+                </div>
             </b-col>
             <b-col lg="3" class="fullHeight d-none d-lg-block">
                 <MarkerBuilder
@@ -39,6 +73,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { ref } from 'vue';
 
 import BattleMap from '@/models/BattleMap';
 import Marker from '@/models/Marker';
@@ -74,6 +109,8 @@ export default Vue.extend({
                 mData.x,
                 mData.y,
                 mData.radius,
+                mData.condition,
+                mData.height,
                 mData.id
             );
             this.map.addMarker(marker);
@@ -105,6 +142,8 @@ export default Vue.extend({
                 markerToUpdate.setColor(updatedMarker.color);
                 markerToUpdate.setFontColor(updatedMarker.fontColor);
                 markerToUpdate.setRadius(updatedMarker.radius);
+                markerToUpdate.setCondition(updatedMarker.condition);
+                markerToUpdate.setHeight(updatedMarker.height);
             }
         });
 
@@ -116,6 +155,7 @@ export default Vue.extend({
         return {
             map: new BattleMap(),
             selectedMarker: undefined as Marker | undefined,
+            selectedMarkerRef: undefined as HTMLElement | undefined,
             editingMarker: undefined as Marker | undefined,
             isDragging: false,
             currentLocation: {
@@ -131,10 +171,22 @@ export default Vue.extend({
             color: string;
             fontColor: string;
             size: string;
+            condition: string;
+            height: number;
         }): void {
-            const { name, color, fontColor, size } = markerForm;
+            const { name, color, fontColor, size, condition, height } =
+                markerForm;
 
-            const marker = new Marker(name, color, fontColor, 500, 500, +size);
+            const marker = new Marker(
+                name,
+                color,
+                fontColor,
+                500,
+                500,
+                +size,
+                condition,
+                height
+            );
             this.map.addMarker(marker);
 
             socket.emit('addMarker', marker.toString());
@@ -164,13 +216,19 @@ export default Vue.extend({
             this.editingMarker = undefined;
             socket.emit('removeMarker', markerId);
         },
-        pickUpMarker(marker: Marker): void {
-            this.selectedMarker = marker;
+        pickUpMarker(data: any): void {
+            this.selectedMarker = data.marker;
+            this.selectedMarkerRef = data.ref;
             this.isDragging = true;
         },
         putDownMarker(): void {
             if (this.selectedMarker && this.isDragging) {
                 this.isDragging = false;
+
+                if (this.selectedMarkerTrashHover) {
+                    this.removeMarker(this.selectedMarker.id);
+                    return;
+                }
 
                 const movement = {
                     id: this.selectedMarker.id,
@@ -206,6 +264,34 @@ export default Vue.extend({
             const map = this.$refs.map as SVGGraphicsElement;
             return map.getScreenCTM();
         },
+        selectedMarkerTrashHover(): boolean {
+            this.currentLocation.x;
+            this.currentLocation.y;
+            if (!this.selectedMarkerRef) return false;
+
+            const trashArea = this.$refs.trashArea as HTMLElement;
+
+            const markerBB = this.selectedMarkerRef.getBoundingClientRect();
+            const trashBB = trashArea.getBoundingClientRect();
+
+            return !(
+                markerBB.right < trashBB.left ||
+                markerBB.left > trashBB.right ||
+                markerBB.bottom < trashBB.top ||
+                markerBB.top > trashBB.bottom
+            );
+        },
+        trashAreaStyle(): { [key: string]: string } {
+            const bottom = this.isDragging ? '0' : '-10%';
+            const backgroundColor = this.selectedMarkerTrashHover
+                ? 'red'
+                : '#000';
+
+            return {
+                '--trash-bottom': bottom,
+                '--trash-bg-color': backgroundColor,
+            };
+        },
     },
 });
 </script>
@@ -218,8 +304,35 @@ export default Vue.extend({
 }
 
 .battle-map-svg {
-    background-color: lightgrey;
+    background: lightgrey;
     height: 100%;
     width: 100%;
+}
+
+#battleMapCol {
+    position: relative;
+}
+
+#trashArea {
+    position: absolute;
+    bottom: var(--trash-bottom);
+    padding: 0.5rem 0.5rem;
+    border-radius: 1rem 1rem 0 0;
+    font-size: 1.25rem;
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    right: 0;
+    left: 0;
+
+    background-color: var(--trash-bg-color);
+    color: #fff;
+    opacity: 0.7;
+
+    transition: bottom 0.25s ease-in-out;
+}
+
+#trashArea:hover {
+    cursor: grabbing;
 }
 </style>

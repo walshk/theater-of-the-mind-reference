@@ -7,6 +7,8 @@ export default class Marker {
     public x: number;
     public y: number;
     public radius: number;
+    public condition: string;
+    public height: number;
 
     constructor(
         name: string,
@@ -15,6 +17,8 @@ export default class Marker {
         x: number,
         y: number,
         radius: number,
+        condition = '',
+        height = 0,
         id?: string
     ) {
         this.id = id ?? uuidv4();
@@ -25,6 +29,8 @@ export default class Marker {
         this.x = x;
         this.y = y;
         this.radius = radius;
+        this.condition = condition;
+        this.height = height;
     }
 
     setName(name: string): void {
@@ -41,6 +47,14 @@ export default class Marker {
 
     setRadius(radius: number): void {
         this.radius = radius;
+    }
+
+    setCondition(condition: string): void {
+        this.condition = condition;
+    }
+
+    setHeight(height: number): void {
+        this.height = height;
     }
 
     moveMarkerTo(x: number, y: number): void {
@@ -76,6 +90,8 @@ export default class Marker {
             x: this.x,
             y: this.y,
             radius: this.radius,
+            condition: this.condition,
+            height: this.height,
         });
     }
 }
