@@ -94,8 +94,20 @@
                 <svg width="100%" height="100%" viewBox="0 0 400 400">
                     <g class="entity-marker">
                         <circle
+                            v-if="form.condition.length > 0"
+                            class="circle"
+                            :cx="200"
+                            :cy="200"
+                            :r="+form.size + 4"
+                            fill="none"
+                            stroke="red"
+                            stroke-width="5px"
+                            stroke-dasharray="1"
+                            opacity="0.7"
+                        />
+                        <circle
                             class="border-circle"
-                            :fill="form.condition.length > 0 ? 'red' : 'black'"
+                            :fill="'black'"
                             :cx="200"
                             :cy="200"
                             :r="+form.size"
@@ -104,11 +116,7 @@
                             :fill="form.color"
                             :cx="200"
                             :cy="200"
-                            :r="
-                                form.condition.length > 0
-                                    ? +form.size - 6
-                                    : +form.size - 2
-                            "
+                            :r="+form.size - 2"
                         ></circle>
                         <text
                             class="marker-name"
