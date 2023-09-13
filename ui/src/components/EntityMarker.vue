@@ -57,7 +57,7 @@
             :x="marker.x"
             :y="marker.y + marker.radius / 1.5"
             text-anchor="middle"
-            fill="#000"
+            :fill="marker.fontColor"
             :style="`font-size: ${marker.radius / 3}px;`"
         >
             {{ markerHeight }}

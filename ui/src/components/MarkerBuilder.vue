@@ -144,7 +144,7 @@
                             :x="200"
                             :y="200 + form.size / 1.2"
                             text-anchor="middle"
-                            fill="#000"
+                            :fill="form.fontColor"
                             :style="`font-size: ${form.size / 3}px;`"
                         >
                             {{ formHeight }}
