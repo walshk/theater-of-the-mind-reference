@@ -5,6 +5,7 @@ services:
         build:
             context: ./ui/
         image: tomr-ui
+        restart: always
         depends_on:
             - cache
             - server
@@ -21,6 +22,7 @@ services:
         build:
             context: ./server/
         image: tomr-server
+        restart: always
         depends_on:
             - cache
         environment:
