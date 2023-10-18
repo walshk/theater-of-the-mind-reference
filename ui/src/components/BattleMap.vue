@@ -73,7 +73,6 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { ref } from 'vue';
 
 import BattleMap from '@/models/BattleMap';
 import Marker from '@/models/Marker';

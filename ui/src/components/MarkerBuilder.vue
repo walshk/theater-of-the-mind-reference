@@ -1,176 +1,171 @@
 <template>
     <b-container class="marker-builder" fluid>
-        <b-row style="margin-bottom: 1rem">
-            <b-col>
-                <h3 v-if="!marker">Add New Marker</h3>
-                <h3 v-else>Edit Marker</h3>
-            </b-col>
-        </b-row>
-        <b-row>
-            <b-col>
-                <b-form @submit="submit">
-                    <b-form-group
-                        id="input-name-group"
-                        class="marker-form-group"
-                        label="Label"
-                        label-for="marker-label"
-                    >
-                        <b-form-input
-                            id="marker-label"
-                            v-model="form.name"
-                            type="text"
-                        ></b-form-input>
-                    </b-form-group>
-                    <b-form-group
-                        id="input-color-group"
-                        class="marker-form-group"
-                        label="Marker Color"
-                        label-for="marker-color"
-                    >
-                        <b-form-input
-                            id="marker-color"
-                            v-model="form.color"
-                            type="color"
-                        ></b-form-input>
-                    </b-form-group>
-                    <b-form-group
-                        id="input-font-color-group"
-                        class="marker-form-group"
-                        label="Font Color"
-                        label-for="marker-font-color"
-                    >
-                        <b-form-input
-                            id="marker-font-color"
-                            v-model="form.fontColor"
-                            type="color"
-                        ></b-form-input>
-                    </b-form-group>
-                    <b-form-group
-                        id="input-name-group"
-                        class="marker-form-group"
-                        label="Size"
-                        label-for="marker-size"
-                    >
-                        <b-form-select
-                            id="marker-size"
-                            style="
-                                width: 100%;
-                                text-align: center;
-                                padding: 0.5rem 0rem;
-                            "
-                            v-model="form.size"
-                            :options="sizeOptions"
-                        ></b-form-select>
-                    </b-form-group>
-                    <b-form-group
-                        id="input-condition-group"
-                        class="marker-form-group"
-                        label="Condition"
-                        label-for="marker-condition"
-                    >
-                        <b-form-input
-                            id="marker-condition"
-                            v-model="form.condition"
-                        ></b-form-input>
-                    </b-form-group>
-                    <b-form-group
-                        id="input-height-group"
-                        class="marker-form-group"
-                        label="Flying Height"
-                        label-for="marker-height"
-                    >
-                        <b-form-input
-                            id="marker-height"
-                            v-model="form.height"
-                            type="number"
-                            min="0"
-                        ></b-form-input>
-                    </b-form-group>
-                </b-form>
-            </b-col>
-        </b-row>
-        <b-row style="text-align: center; height: 30%">
-            <b-col style="text-align: center; height: 100%">
-                <svg width="100%" height="100%" viewBox="0 0 400 400">
-                    <g class="entity-marker">
-                        <circle
-                            v-if="form.condition.length > 0"
-                            class="circle"
-                            :cx="200"
-                            :cy="200"
-                            :r="+form.size + 4"
-                            fill="none"
-                            stroke="red"
-                            stroke-width="5px"
-                            stroke-dasharray="1"
-                            opacity="0.7"
-                        />
-                        <circle
-                            class="border-circle"
-                            :fill="'black'"
-                            :cx="200"
-                            :cy="200"
-                            :r="+form.size"
-                        ></circle>
-                        <circle
-                            :fill="form.color"
-                            :cx="200"
-                            :cy="200"
-                            :r="+form.size - 2"
-                        ></circle>
-                        <text
-                            class="marker-name"
-                            :x="200"
-                            :y="200"
-                            :style="`font-size: ${+form.size / 2}px`"
-                            :fill="form.fontColor"
-                            text-anchor="middle"
-                            dy=".3em"
-                        >
-                            {{ form.name }}
-                        </text>
-                        <text
-                            class="condition-text"
-                            :x="200"
-                            :y="200 + form.size + 16"
-                            text-anchor="middle"
-                            fill="#000"
-                            :style="`font-size: 12px;`"
-                        >
-                            {{ form.condition }}
-                        </text>
-                        <text
-                            class="height-text"
-                            :x="200"
-                            :y="200 + form.size / 1.2"
-                            text-anchor="middle"
-                            :fill="form.fontColor"
-                            :style="`font-size: ${form.size / 3}px;`"
-                        >
-                            {{ formHeight }}
-                        </text>
-                    </g>
-                </svg>
-            </b-col>
-        </b-row>
-        <b-row style="text-align: center">
-            <b-col>
-                <b-button v-if="!marker" variant="success" @click="createMarker"
-                    >Add Marker</b-button
+        <h3 class="title" v-if="!marker">Add New Marker</h3>
+        <h3 class="title" v-else>Edit Marker</h3>
+
+        <b-form class="marker-form" @submit="submit">
+            <b-form-group
+                id="input-name-group"
+                class="marker-form-group"
+                label="Label"
+                label-for="marker-label"
+            >
+                <b-form-input
+                    id="marker-label"
+                    v-model="form.name"
+                    type="text"
+                ></b-form-input>
+            </b-form-group>
+            <b-form-group
+                id="input-color-group"
+                class="marker-form-group"
+                label="Marker Color"
+                label-for="marker-color"
+            >
+                <b-form-input
+                    id="marker-color"
+                    v-model="form.color"
+                    type="color"
+                ></b-form-input>
+            </b-form-group>
+            <b-form-group
+                id="input-font-color-group"
+                class="marker-form-group"
+                label="Font Color"
+                label-for="marker-font-color"
+            >
+                <b-form-input
+                    id="marker-font-color"
+                    v-model="form.fontColor"
+                    type="color"
+                ></b-form-input>
+            </b-form-group>
+            <b-form-group
+                id="input-name-group"
+                class="marker-form-group"
+                label="Size"
+                label-for="marker-size"
+            >
+                <b-form-select
+                    id="marker-size"
+                    style="
+                        width: 100%;
+                        text-align: center;
+                        padding: 0.5rem 0rem;
+                    "
+                    v-model="form.size"
+                    :options="sizeOptions"
+                ></b-form-select>
+            </b-form-group>
+            <b-form-group
+                id="input-condition-group"
+                class="marker-form-group"
+                label="Condition"
+                label-for="marker-condition"
+            >
+                <b-form-input
+                    id="marker-condition"
+                    v-model="form.condition"
+                ></b-form-input>
+            </b-form-group>
+            <b-form-group
+                id="input-height-group"
+                class="marker-form-group"
+                label="Flying Height"
+                label-for="marker-height"
+            >
+                <b-form-input
+                    id="marker-height"
+                    v-model="form.height"
+                    type="number"
+                    min="0"
+                ></b-form-input>
+            </b-form-group>
+        </b-form>
+
+        <svg class="svg-area" width="100%" height="100%" viewBox="0 0 400 400">
+            <g class="entity-marker">
+                <circle
+                    v-if="form.condition.length > 0"
+                    class="circle"
+                    :cx="200"
+                    :cy="200"
+                    :r="+form.size + 4"
+                    fill="none"
+                    stroke="red"
+                    stroke-width="5px"
+                    stroke-dasharray="1"
+                    opacity="0.7"
+                />
+                <circle
+                    class="border-circle"
+                    :fill="'black'"
+                    :cx="200"
+                    :cy="200"
+                    :r="+form.size"
+                ></circle>
+                <circle
+                    :fill="form.color"
+                    :cx="200"
+                    :cy="200"
+                    :r="+form.size - 2"
+                ></circle>
+                <text
+                    class="marker-name"
+                    :x="200"
+                    :y="200"
+                    :style="`font-size: ${+form.size / 2}px`"
+                    :fill="form.fontColor"
+                    text-anchor="middle"
+                    dy=".3em"
                 >
-                <b-button v-if="marker" variant="success" @click="updateMarker">
+                    {{ form.name }}
+                </text>
+                <text
+                    class="condition-text"
+                    :x="200"
+                    :y="200 + form.size + 16"
+                    text-anchor="middle"
+                    fill="#000"
+                    :style="`font-size: 12px;`"
+                >
+                    {{ form.condition }}
+                </text>
+                <text
+                    class="height-text"
+                    :x="200"
+                    :y="200 + form.size / 1.2"
+                    text-anchor="middle"
+                    :fill="form.fontColor"
+                    :style="`font-size: ${form.size / 3}px;`"
+                >
+                    {{ formHeight }}
+                </text>
+            </g>
+        </svg>
+
+        <div class="marker-builder-button" v-if="!marker">
+            <b-button variant="success" @click="createMarker"
+                >Add Marker</b-button
+            >
+        </div>
+
+        <div class="marker-builder-button" v-if="marker">
+            <span>
+                <b-button variant="success" @click="updateMarker">
                     Update Marker
                 </b-button>
+            </span>
+            <span>
                 <b-button
-                    v-if="marker"
+                    class="cancel-button"
                     variant="secondary"
                     @click="deselectMarker"
-                    style="margin-left: 1rem"
                 >
                     Cancel
                 </b-button>
-            </b-col>
-        </b-row>
+            </span>
+        </div>
     </b-container>
 </template>
 
@@ -286,6 +281,10 @@ export default Vue.extend({
     height: 100%;
     width: 100%;
 
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content 3fr 1fr 1fr;
+
     padding-top: 1rem;
     text-align: left;
     overflow-y: auto;
@@ -294,6 +293,32 @@ export default Vue.extend({
 .marker-form-group {
     margin-bottom: 1rem;
     font-size: 1rem;
+}
+
+.title {
+    grid-row: 1;
+}
+
+.marker-form {
+    display: block;
+    grid-row: 2;
+}
+
+.svg-area {
+    grid-row: 3;
+}
+
+.marker-builder-button {
+    grid-row: 4;
+    width: 100%;
+}
+
+.marker-builder-button button {
+    width: 100%;
+}
+
+.cancel-button {
+    margin-top: 0.5rem;
 }
 
 input {

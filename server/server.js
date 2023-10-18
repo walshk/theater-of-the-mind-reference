@@ -1,4 +1,5 @@
 import express from 'express';
+import session from 'express-session';
 import http from 'http';
 import cors from 'cors';
 import { Server } from 'socket.io';
@@ -10,12 +11,20 @@ import {
     updateMarkerTraits,
 } from './eventController.js';
 
+const sessionMiddleware = session({
+    secret: 'test-secret', // TODO: change secret
+    resave: true,
+    saveUninitialized: true,
+});
+
 const app = express();
 app.use(
     cors({
         origin: 'http://localhost:8080',
     })
 );
+
+app.use(sessionMiddleware);
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -24,9 +33,23 @@ const io = new Server(server, {
         methods: ['GET', 'POST'],
     },
 });
+io.engine.use(sessionMiddleware);
+
+app.post('/create/:gameId', (req, res) => {
+    const gameId = req.params.gameId;
+});
+
+app.post('/join/:gameId', (req, res) => {
+    const gameId = req.params.gameId;
+
+    // TODO: check if game exists with game id
+});
 
 io.on('connection', async (socket) => {
+    const user = socket.request.session.id;
+
     socket.on('addMarker', async (markerString) => {
+        console.log('marker added by ', user);
         await addMarker(socket, markerString);
     });
 
