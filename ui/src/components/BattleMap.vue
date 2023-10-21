@@ -58,14 +58,32 @@
                     <span>Drag Here to Delete</span>
                 </div>
             </b-col>
-            <b-col lg="3" class="fullHeight d-none d-lg-block">
+            <b-col ref="rightCol" lg="3" class="fullHeight d-none d-lg-block">
+                <span
+                    class="tab-selector"
+                    :class="{ selected: isSelectedTab(tabs.BUILDER) }"
+                    :style="tabSelectorStyle"
+                    @click="selectedTab = tabs.BUILDER"
+                >
+                    <b-icon-hammer />
+                </span>
+                <span
+                    class="tab-selector lower"
+                    :class="{ selected: isSelectedTab(tabs.DICE) }"
+                    :style="tabSelectorStyle"
+                    @click="selectedTab = tabs.DICE"
+                >
+                    <b-icon-dice-6 />
+                </span>
                 <MarkerBuilder
+                    v-if="selectedTab === tabs.BUILDER"
                     :marker="editingMarker"
                     @createMarker="addMarker"
                     @updateMarker="updateMarker"
                     @cancelEdit="cancelEditMarker"
                     @removeMarker="removeMarker"
                 />
+                <DiceRoller v-if="selectedTab === tabs.DICE" />
             </b-col>
         </b-row>
     </b-container>
@@ -80,26 +98,40 @@ import MarkerMovement from '@/models/MarkerMovement';
 
 import EntityMarker from '@/components/EntityMarker.vue';
 import MarkerBuilder from './MarkerBuilder.vue';
+import DiceRoller from './DiceRoller.vue';
 
-import socket from '@/socket';
+import connectSocket from '@/socket';
+import { Socket } from 'socket.io-client';
+
+let socket: Socket;
 
 export default Vue.extend({
     name: 'BattleMap',
+    props: {
+        gameId: String,
+    },
     components: {
         EntityMarker,
         MarkerBuilder,
+        DiceRoller,
     },
     mounted() {
         this.map = new BattleMap();
+        this.pageResized = !this.pageResized;
 
-        socket.on('markerError', (message: string) => {
+        socket = connectSocket(this.gameId);
+        this.$emit('setSocket', socket);
+
+        socket.connect();
+
+        socket.on(`${this.gameIdSafe}::markerError`, (message: string) => {
             this.$bvToast.toast(message, {
                 title: 'Marker Error',
                 variant: 'warning',
             });
         });
 
-        socket.on('addMarker', (markerString: string) => {
+        socket.on(`${this.gameIdSafe}::addMarker`, (markerString: string) => {
             const mData = JSON.parse(markerString);
             const marker = new Marker(
                 mData.name,
@@ -115,36 +147,43 @@ export default Vue.extend({
             this.map.addMarker(marker);
         });
 
-        socket.on('markerMoved', (markerMovementString: string) => {
-            const movement: MarkerMovement = JSON.parse(markerMovementString);
-            const movedMarker = this.map.markers.find(
-                (m) => m.id === movement.id
-            );
+        socket.on(
+            `${this.gameIdSafe}::markerMoved`,
+            (markerMovementString: string) => {
+                const movement: MarkerMovement =
+                    JSON.parse(markerMovementString);
+                const movedMarker = this.map.markers.find(
+                    (m) => m.id === movement.id
+                );
 
-            if (movedMarker) {
-                movedMarker.moveMarkerToSmooth(movement.x, movement.y);
+                if (movedMarker) {
+                    movedMarker.moveMarkerToSmooth(movement.x, movement.y);
+                }
             }
-        });
+        );
 
-        socket.on('removeMarker', (markerId: string) => {
+        socket.on(`${this.gameIdSafe}::removeMarker`, (markerId: string) => {
             this.map.removeMarker(markerId);
         });
 
-        socket.on('updateMarkerTraits', (markerString: string) => {
-            const updatedMarker = JSON.parse(markerString);
-            const markerToUpdate = this.map.markers.find(
-                (m) => m.id === updatedMarker.id
-            );
+        socket.on(
+            `${this.gameIdSafe}::updateMarkerTraits`,
+            (markerString: string) => {
+                const updatedMarker = JSON.parse(markerString);
+                const markerToUpdate = this.map.markers.find(
+                    (m) => m.id === updatedMarker.id
+                );
 
-            if (markerToUpdate) {
-                markerToUpdate.setName(updatedMarker.name);
-                markerToUpdate.setColor(updatedMarker.color);
-                markerToUpdate.setFontColor(updatedMarker.fontColor);
-                markerToUpdate.setRadius(updatedMarker.radius);
-                markerToUpdate.setCondition(updatedMarker.condition);
-                markerToUpdate.setHeight(updatedMarker.height);
+                if (markerToUpdate) {
+                    markerToUpdate.setName(updatedMarker.name);
+                    markerToUpdate.setColor(updatedMarker.color);
+                    markerToUpdate.setFontColor(updatedMarker.fontColor);
+                    markerToUpdate.setRadius(updatedMarker.radius);
+                    markerToUpdate.setCondition(updatedMarker.condition);
+                    markerToUpdate.setHeight(updatedMarker.height);
+                }
             }
-        });
+        );
 
         window.addEventListener('resize', () => {
             this.pageResized = !this.pageResized;
@@ -162,9 +201,17 @@ export default Vue.extend({
                 y: 0,
             },
             pageResized: false,
+            tabs: {
+                BUILDER: 'builder',
+                DICE: 'dice',
+            },
+            selectedTab: 'builder',
         };
     },
     methods: {
+        isSelectedTab(tabName: string): boolean {
+            return this.selectedTab === tabName;
+        },
         addMarker(markerForm: {
             name: string;
             color: string;
@@ -255,6 +302,9 @@ export default Vue.extend({
         },
     },
     computed: {
+        gameIdSafe(): string {
+            return encodeURIComponent(this.gameId);
+        },
         markers(): Marker[] {
             return this.map.getMarkers();
         },
@@ -283,12 +333,25 @@ export default Vue.extend({
         trashAreaStyle(): { [key: string]: string } {
             const bottom = this.isDragging ? '0' : '-10%';
             const backgroundColor = this.selectedMarkerTrashHover
-                ? 'red'
+                ? 'var(--bs-danger)'
                 : '#000';
 
             return {
                 '--trash-bottom': bottom,
                 '--trash-bg-color': backgroundColor,
+            };
+        },
+        tabSelectorStyle() {
+            this.pageResized;
+            if (!this.$refs.rightCol) return;
+
+            const rightCol = this.$refs.rightCol as HTMLElement;
+            const left = rightCol.getBoundingClientRect().left - 40;
+            const top = rightCol.getBoundingClientRect().top + 5;
+
+            return {
+                '--tab-top': `${top}px`,
+                '--tab-left': `${left}px`,
             };
         },
     },
@@ -333,5 +396,32 @@ export default Vue.extend({
 
 #trashArea:hover {
     cursor: grabbing;
+}
+
+.tab-selector {
+    position: absolute;
+    top: var(--tab-top);
+    left: var(--tab-left);
+    font-size: 1rem;
+    background-color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+}
+
+.tab-selector.lower {
+    top: calc(var(--tab-top) + 40px);
+}
+
+.tab-selector.selected {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.tab-selector:not(.selected):hover {
+    cursor: pointer;
+    /* background-color: var(--bs-success); */
+    /* color: white; */
+    transform: translateX(-5px);
 }
 </style>

@@ -20,6 +20,7 @@ const sessionMiddleware = session({
 const app = express();
 app.use(
     cors({
+        credentials: true,
         origin: 'http://localhost:8080',
     })
 );
@@ -31,42 +32,39 @@ const io = new Server(server, {
     cors: {
         origin: 'http://localhost:8080',
         methods: ['GET', 'POST'],
+        credentials: true,
     },
 });
 io.engine.use(sessionMiddleware);
 
-app.post('/create/:gameId', (req, res) => {
-    const gameId = req.params.gameId;
-});
-
 app.post('/join/:gameId', (req, res) => {
     const gameId = req.params.gameId;
+    req.session.gameId = gameId;
 
-    // TODO: check if game exists with game id
+    res.status(200).end();
 });
 
 io.on('connection', async (socket) => {
-    const user = socket.request.session.id;
+    const gameId = socket.handshake.query.gameId + '::' ?? '';
 
     socket.on('addMarker', async (markerString) => {
-        console.log('marker added by ', user);
-        await addMarker(socket, markerString);
+        await addMarker(socket, markerString, gameId);
     });
 
     socket.on('getMarkers', async () => {
-        await getMarkers(socket);
+        await getMarkers(socket, gameId);
     });
 
     socket.on('moveMarker', async (markerMovementString) => {
-        await updateMarker(socket, markerMovementString);
+        await updateMarker(socket, markerMovementString, gameId);
     });
 
     socket.on('updateMarkerTraits', async (markerString) => {
-        await updateMarkerTraits(socket, markerString);
+        await updateMarkerTraits(socket, markerString, gameId);
     });
 
     socket.on('removeMarker', async (markerId) => {
-        await removeMarker(socket, markerId);
+        await removeMarker(socket, markerId, gameId);
     });
 });
 

@@ -283,7 +283,7 @@ export default Vue.extend({
 
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: min-content 3fr 1fr 1fr;
+    grid-template-rows: min-content min-content 25% min-content;
 
     padding-top: 1rem;
     text-align: left;

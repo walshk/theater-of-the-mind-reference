@@ -14,7 +14,7 @@ client.on('error', (err) => console.log('Redis Client Error', err));
 await client.connect();
 
 async function dbSet(key, val) {
-    await client.set(key, val);
+    await client.setEx(key, 43200, val); // set keys to expire after 12 hours
     return true;
 }
 
@@ -38,4 +38,4 @@ async function dbDelete(key) {
     return true;
 }
 
-export { dbGet, dbGetMultiple, dbSet, dbDelete, dbKeys };
+export { dbGet, dbGetMultiple, dbSet, dbDelete, dbKeys, client };

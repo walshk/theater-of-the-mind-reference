@@ -5,15 +5,21 @@ const URL =
         ? `https://${window.location.host}`
         : 'ws://localhost:3333';
 
-const socket = io(URL);
+const connectSocket = (gameId: string) => {
+    const socket = io(`${URL}?gameId=${gameId}`, {
+        withCredentials: true,
+    });
 
-socket.on('connect', () => {
-    console.log('connected to server');
-    socket.emit('getMarkers');
-});
+    socket.on('connect', () => {
+        console.log(`%cGame Connected: ${gameId}`, 'color: #198754');
+        socket.emit('getMarkers');
+    });
 
-socket.on('disconnect', () => {
-    console.log('disconnected from server');
-});
+    socket.on('disconnect', () => {
+        console.log(`%cGame Disconnected: ${gameId}`, 'color: #dc3545');
+    });
 
-export default socket;
+    return socket;
+};
+
+export default connectSocket;
