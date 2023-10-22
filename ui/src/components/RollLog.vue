@@ -14,17 +14,15 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import DiceResult from './DiceResult.vue';
 
-export default Vue.extend({
+export default defineComponent({
     name: 'RollLog',
     components: {
         DiceResult,
     },
-    props: {
-        rolls: Array,
-    },
+    props: ['rolls'],
     methods: {
         time(timestamp: number): string {
             return new Date(timestamp).toLocaleString();

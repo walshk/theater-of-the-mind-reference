@@ -26,18 +26,18 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import RollResult from '@/models/RollResult';
 
 import IndividualDie from './IndividualDie.vue';
 
-export default Vue.extend({
+export default defineComponent({
     name: 'DiceResult',
     components: {
         IndividualDie,
     },
     props: {
-        roll: RollResult,
+        roll: { type: RollResult, required: true },
         show: Boolean,
         static: Boolean,
         time: String,
@@ -53,7 +53,10 @@ export default Vue.extend({
         },
     },
     computed: {
-        dice() {
+        dice(): Array<{
+            dieType: number;
+            value: number;
+        }> {
             return this.roll.toDiceArray();
         },
         rollingDone(): boolean {
