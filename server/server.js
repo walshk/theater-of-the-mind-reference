@@ -51,7 +51,7 @@ io.on('connection', async (socket) => {
 
     socket.on('normalRoll', async (rollString) => {
         io.emit(`${gameId}normalRoll`, rollString);
-        await addNormalRollToLog(socket, rollString, gameId);
+        await addNormalRollToLog(io, rollString, gameId);
     });
 
     socket.on('getNormalRolls', async () => {

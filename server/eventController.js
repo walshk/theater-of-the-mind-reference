@@ -59,9 +59,9 @@ export async function updateMarkerTraits(socket, markerString, gameId = '') {
     await dbSet(markerKey, newMarkerString);
 }
 
-export async function addNormalRollToLog(socket, rollString, gameId = '') {
+export async function addNormalRollToLog(io, rollString, gameId = '') {
     const timestamp = Date.now();
-    socket.broadcast.emit(
+    io.emit(
         `${gameId}addNormalRollToLog`,
         `${rollString}::timestamp::${timestamp}`
     );
