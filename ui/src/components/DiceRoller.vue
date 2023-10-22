@@ -78,7 +78,12 @@
             ></b-form-spinbutton>
         </div>
         <div class="roll-button">
-            <b-button variant="success" @click="rollDice">Roll</b-button>
+            <b-button
+                :disabled="disableRoll"
+                variant="success"
+                @click="rollDice"
+                >Roll</b-button
+            >
         </div>
     </div>
 </template>
@@ -146,10 +151,24 @@ export default Vue.extend({
                     rollValues[dieValue].push(roll);
                 }
             }
-            this.$emit('diceRoll', {
-                dice: rollValues,
-                modifier: this.modifier,
-            });
+            this.$emit(
+                'diceRoll',
+                JSON.stringify({
+                    dice: rollValues,
+                    modifier: this.modifier,
+                })
+            );
+        },
+    },
+    computed: {
+        disableRoll(): boolean {
+            const amounts = Object.values(this.diceAmounts).flat();
+            for (let i = 0; i < amounts.length; i++) {
+                if (amounts[i] > 0) {
+                    return false;
+                }
+            }
+            return true;
         },
     },
 });

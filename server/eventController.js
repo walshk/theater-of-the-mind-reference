@@ -58,3 +58,31 @@ export async function updateMarkerTraits(socket, markerString, gameId = '') {
 
     await dbSet(markerKey, newMarkerString);
 }
+
+export async function addNormalRollToLog(socket, rollString, gameId = '') {
+    const timestamp = Date.now();
+    socket.broadcast.emit(
+        `${gameId}addNormalRollToLog`,
+        `${rollString}::timestamp::${timestamp}`
+    );
+    const rollKey = `${gameId}roll::${timestamp}`;
+
+    await dbSet(rollKey, `${rollString}::timestamp::${timestamp}`);
+}
+
+export async function getNormalRolls(socket, gameId = '') {
+    const rollKeys = await dbKeys(`${gameId}roll::*`);
+
+    if (rollKeys.length > 0) {
+        const rolls = await dbGetMultiple(rollKeys);
+        rolls.sort((keyA, keyB) => {
+            const timeA = +keyA.split('::timestamp::').at(-1);
+            const timeB = +keyB.split('::timestamp::').at(-1);
+            return timeA - timeB;
+        });
+
+        for (let i = 0; i < rolls.length; i++) {
+            socket.emit(`${gameId}addNormalRollToLog`, rolls[i]);
+        }
+    }
+}

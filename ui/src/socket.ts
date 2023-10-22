@@ -13,6 +13,7 @@ const connectSocket = (gameId: string) => {
     socket.on('connect', () => {
         console.log(`%cGame Connected: ${gameId}`, 'color: #198754');
         socket.emit('getMarkers');
+        socket.emit('getNormalRolls');
     });
 
     socket.on('disconnect', () => {

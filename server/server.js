@@ -9,6 +9,8 @@ import {
     updateMarker,
     removeMarker,
     updateMarkerTraits,
+    addNormalRollToLog,
+    getNormalRolls,
 } from './eventController.js';
 
 const sessionMiddleware = session({
@@ -46,6 +48,15 @@ app.post('/join/:gameId', (req, res) => {
 
 io.on('connection', async (socket) => {
     const gameId = socket.handshake.query.gameId + '::' ?? '';
+
+    socket.on('normalRoll', async (rollString) => {
+        io.emit(`${gameId}normalRoll`, rollString);
+        await addNormalRollToLog(socket, rollString, gameId);
+    });
+
+    socket.on('getNormalRolls', async () => {
+        await getNormalRolls(socket, gameId);
+    });
 
     socket.on('addMarker', async (markerString) => {
         await addMarker(socket, markerString, gameId);

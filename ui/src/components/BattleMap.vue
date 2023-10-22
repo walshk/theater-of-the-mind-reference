@@ -7,6 +7,14 @@
                 id="battleMapCol"
             >
                 <span class="game-id-text">Game ID: {{ gameId }}</span>
+                <div class="results-area">
+                    <DiceResult
+                        v-for="result in diceResults"
+                        :key="result.id"
+                        :roll="result.roll"
+                    />
+                </div>
+
                 <svg
                     class="battle-map-svg"
                     width="100%"
@@ -76,6 +84,14 @@
                 >
                     <b-icon-dice-6 />
                 </span>
+                <span
+                    class="tab-selector lower-2"
+                    :class="{ selected: isSelectedTab(tabs.LOG) }"
+                    :style="tabSelectorStyle"
+                    @click="selectedTab = tabs.LOG"
+                >
+                    <b-icon-clock-history />
+                </span>
                 <MarkerBuilder
                     v-if="selectedTab === tabs.BUILDER"
                     :marker="editingMarker"
@@ -84,7 +100,11 @@
                     @cancelEdit="cancelEditMarker"
                     @removeMarker="removeMarker"
                 />
-                <DiceRoller v-if="selectedTab === tabs.DICE" />
+                <DiceRoller
+                    v-if="selectedTab === tabs.DICE"
+                    @diceRoll="emitDiceRoll"
+                />
+                <RollLog v-if="selectedTab === tabs.LOG" :rolls="rollsLog" />
             </b-col>
         </b-row>
     </b-container>
@@ -100,9 +120,16 @@ import MarkerMovement from '@/models/MarkerMovement';
 import EntityMarker from '@/components/EntityMarker.vue';
 import MarkerBuilder from './MarkerBuilder.vue';
 import DiceRoller from './DiceRoller.vue';
+import DiceResult from './DiceResult.vue';
 
 import connectSocket from '@/socket';
 import { Socket } from 'socket.io-client';
+import RollResult from '@/models/RollResult';
+
+import { v4 as uuidv4 } from 'uuid';
+import RollLog from './RollLog.vue';
+
+import DiceResultComp from '@/models/DiceResultComp';
 
 let socket: Socket;
 
@@ -115,6 +142,8 @@ export default Vue.extend({
         EntityMarker,
         MarkerBuilder,
         DiceRoller,
+        DiceResult,
+        RollLog,
     },
     mounted() {
         this.map = new BattleMap();
@@ -130,6 +159,25 @@ export default Vue.extend({
                 title: 'Marker Error',
                 variant: 'warning',
             });
+        });
+
+        socket.on(
+            `${this.gameIdSafe}::addNormalRollToLog`,
+            (rollStringWithTimestamp: string) => {
+                const parts = rollStringWithTimestamp.split('::timestamp::');
+
+                const timestamp = +parts.slice(-1)[0];
+                const rollString = parts[0];
+
+                this.rollsLog.unshift({
+                    timestamp,
+                    rollResult: new RollResult(rollString),
+                });
+            }
+        );
+
+        socket.on(`${this.gameIdSafe}::normalRoll`, (rollString: string) => {
+            this.displayRoll(rollString);
         });
 
         socket.on(`${this.gameIdSafe}::addMarker`, (markerString: string) => {
@@ -205,11 +253,37 @@ export default Vue.extend({
             tabs: {
                 BUILDER: 'builder',
                 DICE: 'dice',
+                LOG: 'log',
             },
             selectedTab: 'builder',
+            diceResults: [] as Array<DiceResultComp>,
+            rollsLog: [] as Array<{
+                rollResult: RollResult;
+                timestamp: number;
+            }>,
         };
     },
     methods: {
+        emitDiceRoll(rollString: string) {
+            socket.emit('normalRoll', rollString);
+        },
+
+        displayRoll(rollString: string) {
+            const result = {
+                roll: new RollResult(rollString),
+                id: uuidv4(),
+            };
+            this.diceResults.push(result);
+
+            const duration = result.roll.numDice() * 300 + 5000;
+            setTimeout(() => {
+                this.diceResults = this.diceResults.filter(
+                    (r: DiceResultComp) => {
+                        return r.id !== result.id;
+                    }
+                );
+            }, duration);
+        },
         isSelectedTab(tabName: string): boolean {
             return this.selectedTab === tabName;
         },
@@ -415,6 +489,10 @@ export default Vue.extend({
     top: calc(var(--tab-top) + 40px);
 }
 
+.tab-selector.lower-2 {
+    top: calc(var(--tab-top) + 80px);
+}
+
 .tab-selector.selected {
     background-color: var(--bs-primary);
     color: white;
@@ -438,5 +516,21 @@ export default Vue.extend({
     text-align: center;
     text-anchor: middle;
     font-size: 14px;
+}
+
+.results-area {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    transform: translate(-50%, 0);
+    max-width: 70%;
+
+    display: block;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.results-area > * {
+    margin: 1rem 1rem;
 }
 </style>
