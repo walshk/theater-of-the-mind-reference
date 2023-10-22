@@ -6,6 +6,7 @@
                 style="padding-left: 0; padding-right: 1px"
                 id="battleMapCol"
             >
+                <span class="game-id-text">Game ID: {{ gameId }}</span>
                 <svg
                     class="battle-map-svg"
                     width="100%"
@@ -287,6 +288,7 @@ export default Vue.extend({
         },
         editMarker(marker: Marker): void {
             this.editingMarker = marker;
+            this.selectedTab = this.tabs.BUILDER;
         },
         updateMarker(): void {
             if (!this.editingMarker) {
@@ -423,5 +425,18 @@ export default Vue.extend({
     /* background-color: var(--bs-success); */
     /* color: white; */
     transform: translateX(-5px);
+}
+
+.game-id-text {
+    position: absolute;
+    top: 0px;
+    left: 0;
+    background-color: #1b1b1b;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0 0 6px 0;
+    text-align: center;
+    text-anchor: middle;
+    font-size: 14px;
 }
 </style>

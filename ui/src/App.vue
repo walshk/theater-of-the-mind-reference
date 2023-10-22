@@ -74,12 +74,13 @@ body {
 
 .back-button {
     position: absolute;
-    top: 0;
+    top: 29px;
     left: 0;
     z-index: 1000;
     padding: 0.25rem 0.5rem;
     background-color: #1b1b1b;
     color: #eee;
+    font-size: 14px;
     border-radius: 0 0 6px 0;
     font-size: 14px;
 }

@@ -16,7 +16,8 @@
         "socket.io": "^4.7.2",
         "socket.io-client": "^4.7.2",
         "uuid": "^9.0.0",
-        "vue": "^2.6.14"
+        "vue": "^2.6.14",
+        "vue-material-design-icons": "^5.2.0"
     },
     "devDependencies": {
         "@types/uuid": "^9.0.0",
