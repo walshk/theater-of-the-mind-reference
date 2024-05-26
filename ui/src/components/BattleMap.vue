@@ -6,7 +6,10 @@
                 style="padding-left: 0; padding-right: 1px"
                 id="battleMapCol"
             >
-                <span class="game-id-text">Game ID: {{ gameId }}</span>
+                <div class="game-id-text">
+                    <span>Player Name: {{ playerId }}</span>
+                    <span>Game ID: {{ gameId }}</span>
+                </div>
                 <div class="results-area">
                     <DiceResult
                         v-for="result in diceResults"
@@ -137,6 +140,7 @@ export default Vue.extend({
     name: 'BattleMap',
     props: {
         gameId: String,
+        playerId: String,
     },
     components: {
         EntityMarker,
@@ -149,7 +153,7 @@ export default Vue.extend({
         this.map = new BattleMap();
         this.pageResized = !this.pageResized;
 
-        socket = connectSocket(this.gameId);
+        socket = connectSocket(this.gameId, this.playerId);
         this.$emit('setSocket', socket);
 
         socket.connect();
@@ -516,6 +520,11 @@ export default Vue.extend({
     text-align: center;
     text-anchor: middle;
     font-size: 14px;
+
+    display: grid;
+    grid-template-rows: repeat(2, min-content);
+    text-align: left;
+    opacity: 0.6;
 }
 
 .results-area {

@@ -5,10 +5,15 @@ const URL =
         ? `https://${window.location.host}`
         : 'ws://localhost:3333';
 
-const connectSocket = (gameId: string) => {
-    const socket = io(`${URL}?gameId=${gameId}`, {
-        withCredentials: true,
-    });
+const connectSocket = (gameId: string, playerId: string) => {
+    const gameIdEncoded = encodeURIComponent(gameId);
+    const playerIdEncoded = encodeURIComponent(playerId);
+    const socket = io(
+        `${URL}?gameId=${gameIdEncoded}&playerId=${playerIdEncoded}`,
+        {
+            withCredentials: true,
+        }
+    );
 
     socket.on('connect', () => {
         console.log(`%cGame Connected: ${gameId}`, 'color: #198754');

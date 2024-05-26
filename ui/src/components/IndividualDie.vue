@@ -3,7 +3,7 @@
         <span
             v-if="!rolling"
             class="individual-die"
-            :class="{ crit: crit, fail: fail }"
+            :class="{ crit: crit, fail: fail, ignore: ignore }"
         >
             <b-icon :icon="dieIcon"></b-icon>
             <span class="die-value">{{ value }}</span>
@@ -28,6 +28,10 @@ export default Vue.extend({
         },
         value: {
             type: Number,
+            required: true,
+        },
+        ignore: {
+            type: Boolean,
             required: true,
         },
         index: {
@@ -110,6 +114,10 @@ export default Vue.extend({
 
 .individual-die.fail {
     color: var(--bs-danger);
+}
+
+.individual-die.ignore {
+    color: var(--bs-gray-600) !important;
 }
 
 .spinning {

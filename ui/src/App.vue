@@ -3,7 +3,12 @@
         <span v-if="gameJoined" class="back-button" @click="goBack"
             ><b-icon-arrow-left /> Back</span
         >
-        <BattleMap v-if="gameJoined" :gameId="gameId" @setSocket="setSocket" />
+        <BattleMap
+            v-if="gameJoined"
+            :gameId="gameId"
+            :playerId="playerId"
+            @setSocket="setSocket"
+        />
         <JoinGame v-else @joinedGame="joinedGame" />
     </div>
 </template>
@@ -26,12 +31,14 @@ export default Vue.extend({
         return {
             gameJoined: false,
             gameId: '',
+            playerId: '',
             socket: undefined as Socket | undefined,
         };
     },
     methods: {
-        joinedGame(gameId: string) {
+        joinedGame(gameId: string, playerId: string) {
             this.gameId = gameId;
+            this.playerId = playerId;
             this.gameJoined = true;
         },
         setSocket(socket: Socket) {
@@ -74,7 +81,7 @@ body {
 
 .back-button {
     position: absolute;
-    top: 29px;
+    top: 50px;
     left: 0;
     z-index: 1000;
     padding: 0.25rem 0.5rem;

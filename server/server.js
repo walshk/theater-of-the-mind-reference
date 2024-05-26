@@ -2,6 +2,7 @@ import express from 'express';
 import session from 'express-session';
 import http from 'http';
 import cors from 'cors';
+import bodyParser from 'body-parser';
 import { Server } from 'socket.io';
 import {
     addMarker,
@@ -20,13 +21,14 @@ const sessionMiddleware = session({
 });
 
 const app = express();
+
+app.use(bodyParser.json());
 app.use(
     cors({
         credentials: true,
         origin: 'http://localhost:8080',
     })
 );
-
 app.use(sessionMiddleware);
 
 const server = http.createServer(app);
@@ -41,17 +43,23 @@ io.engine.use(sessionMiddleware);
 
 app.post('/join/:gameId', (req, res) => {
     const gameId = req.params.gameId;
+    const playerId = req.body.playerId;
+
     req.session.gameId = gameId;
+    req.session.playerId = playerId;
 
     res.status(200).end();
 });
 
 io.on('connection', async (socket) => {
     const gameId = socket.handshake.query.gameId + '::' ?? '';
+    const playerId = decodeURIComponent(socket.handshake.query.playerId);
 
     socket.on('normalRoll', async (rollString) => {
-        io.emit(`${gameId}normalRoll`, rollString);
-        await addNormalRollToLog(io, rollString, gameId);
+        const defaultPlayerId = '++defaultPlayerId++';
+        const updatedRollString = rollString.replace(defaultPlayerId, playerId);
+        io.emit(`${gameId}normalRoll`, updatedRollString);
+        await addNormalRollToLog(io, updatedRollString, gameId);
     });
 
     socket.on('getNormalRolls', async () => {

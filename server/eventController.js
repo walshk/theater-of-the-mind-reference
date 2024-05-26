@@ -65,13 +65,13 @@ export async function addNormalRollToLog(io, rollString, gameId = '') {
         `${gameId}addNormalRollToLog`,
         `${rollString}::timestamp::${timestamp}`
     );
-    const rollKey = `${gameId}roll::${timestamp}`;
+    const rollKey = `${gameId}saved-die-roll::${timestamp}`;
 
     await dbSet(rollKey, `${rollString}::timestamp::${timestamp}`);
 }
 
 export async function getNormalRolls(socket, gameId = '') {
-    const rollKeys = await dbKeys(`${gameId}roll::*`);
+    const rollKeys = await dbKeys(`${gameId}saved-die-roll::*`);
 
     if (rollKeys.length > 0) {
         const rolls = await dbGetMultiple(rollKeys);

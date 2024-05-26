@@ -2,16 +2,32 @@
     <b-container class="join-game" fluid>
         <div class="join-title">Theater of the Mind Reference</div>
         <div class="join-input">
-            <b-form-group label="Please enter a Game ID to join:">
+            <b-form-group label="Game ID" label-for="game-id">
                 <b-form-input
+                    id="game-id"
                     v-model="gameId"
                     placeholder="my-fun-little-game"
                     @keyup="submitIfEnter"
                 ></b-form-input>
             </b-form-group>
+
+            <b-form-group label="Player Name" label-for="player-name">
+                <b-form-input
+                    id="player-name"
+                    v-model="playerId"
+                    placeholder="Vincent Adultman"
+                    @keyup="submitIfEnter"
+                ></b-form-input>
+            </b-form-group>
         </div>
         <div class="join-button">
-            <b-button variant="success" @click="joinGame"> Join Game </b-button>
+            <b-button
+                variant="success"
+                @click="joinGame"
+                :disabled="playerId.length === 0 || gameId.length === 0"
+            >
+                Join Game
+            </b-button>
         </div>
     </b-container>
 </template>
@@ -25,18 +41,25 @@ export default Vue.extend({
     data() {
         return {
             gameId: '',
+            playerId: '',
         };
     },
     methods: {
         async joinGame(): Promise<void> {
             try {
-                await API.post(`/join/${encodeURIComponent(this.gameId)}`);
-                this.$emit('joinedGame', this.gameId);
+                await API.post(`/join/${encodeURIComponent(this.gameId)}`, {
+                    playerId: this.playerId,
+                });
+                this.$emit('joinedGame', this.gameId, this.playerId);
             } catch (err) {
                 console.error('Error joining game: ', err);
             }
         },
         submitIfEnter(event: KeyboardEvent) {
+            if (this.gameId.length === 0 || this.playerId.length === 0) {
+                return;
+            }
+
             if (event.key === 'Enter') {
                 this.joinGame();
             }
@@ -71,6 +94,10 @@ export default Vue.extend({
 .join-input {
     grid-row: 2;
     margin: 10% 30%;
+
+    display: grid;
+    grid-template-rows: repeat(2, 1fr);
+    row-gap: 1rem;
 }
 
 .join-button {

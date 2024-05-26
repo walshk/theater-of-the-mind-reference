@@ -77,6 +77,16 @@
                 max="100"
             ></b-form-spinbutton>
         </div>
+        <div class="advantage">
+            <b-form-radio-group
+                v-model="selectedAdvantageOption"
+                :options="advantageOptions"
+                name="advantage-options"
+                button-variant="outline-primary"
+                buttons
+            ></b-form-radio-group>
+            <span class="helper-text">{{ advantageHelperText }}</span>
+        </div>
         <div class="roll-button">
             <b-button
                 :disabled="disableRoll"
@@ -127,6 +137,15 @@ export default Vue.extend({
             } as { [key: number]: number },
             modifier: 0,
             diceSize: 40,
+            selectedAdvantageOption: 'normal' as
+                | 'normal'
+                | 'advantage'
+                | 'disadvantage',
+            advantageOptions: [
+                { text: 'Normal', value: 'normal' },
+                { text: 'Advantage', value: 'advantage' },
+                { text: 'Disadvantage', value: 'disadvantage' },
+            ],
         };
     },
     methods: {
@@ -156,6 +175,8 @@ export default Vue.extend({
                 JSON.stringify({
                     dice: rollValues,
                     modifier: this.modifier,
+                    advantage: this.selectedAdvantageOption,
+                    playerId: '++defaultPlayerId++',
                 })
             );
         },
@@ -170,6 +191,16 @@ export default Vue.extend({
             }
             return true;
         },
+        advantageHelperText(): string {
+            const helperTexts = {
+                normal: 'All d20s rolled will be included in the total',
+                advantage: 'Only the highest d20 will be included in the total',
+                disadvantage:
+                    'Only the lowest d20 will be included in the total',
+            };
+
+            return helperTexts[this.selectedAdvantageOption];
+        },
     },
 });
 </script>
@@ -178,8 +209,10 @@ export default Vue.extend({
 .dice-roller {
     display: grid;
 
-    grid-template-rows: repeat(4, min-content) 1fr;
+    grid-template-rows: repeat(5, min-content) 1fr;
     grid-template-columns: 1fr;
+
+    row-gap: 1rem;
 
     padding: 1rem;
     height: 100%;
@@ -226,5 +259,21 @@ export default Vue.extend({
 .dice > svg:hover {
     cursor: pointer;
     filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.2));
+}
+
+.advantage {
+    display: grid;
+    grid-template-rows: 2;
+
+    padding-top: 1rem;
+    row-gap: 1rem;
+}
+
+.advantage .btn {
+    font-size: 0.8rem !important;
+}
+
+.helper-text {
+    font-size: 0.9rem;
 }
 </style>

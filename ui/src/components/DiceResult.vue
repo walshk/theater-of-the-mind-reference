@@ -1,13 +1,28 @@
 <template>
     <b-alert class="dice-result" show variant="dark" fade>
-        <div v-if="time">{{ time }}</div>
+        <div class="roll-metadata">
+            <span class="roll-player">{{ playerId }}</span>
+            <span class="roll-time" v-if="time">({{ time }})</span>
+        </div>
+
         <div class="dice-section">
             <IndividualDie
-                v-for="(die, index) in dice"
+                v-for="(die, index) in diceSections.twenties"
                 :key="`${die.dieType}-${index}`"
                 :dieType="die.dieType"
                 :value="die.value"
-                :index="index"
+                :ignore="die.ignore"
+                :index="0"
+                :static="static"
+                @done="rollDone"
+            />
+            <IndividualDie
+                v-for="(die, index) in diceSections.others"
+                :key="`${die.dieType}-${index}`"
+                :dieType="die.dieType"
+                :value="die.value"
+                :ignore="die.ignore"
+                :index="diceSections.twenties.length + index"
                 :static="static"
                 @done="rollDone"
             />
@@ -53,11 +68,29 @@ export default defineComponent({
         },
     },
     computed: {
+        playerId(): string {
+            return this.roll.playerId;
+        },
         dice(): Array<{
             dieType: number;
             value: number;
+            ignore: boolean;
         }> {
             return this.roll.toDiceArray();
+        },
+        diceSections(): {
+            [key: string]: Array<{
+                dieType: number;
+                value: number;
+                ignore: boolean;
+            }>;
+        } {
+            const d20s = this.dice.filter((d) => d.dieType === 20);
+            const others = this.dice.filter((d) => d.dieType !== 20);
+            return {
+                twenties: d20s,
+                others: others,
+            };
         },
         rollingDone(): boolean {
             return this.rollsCompleted === this.roll.numDice();
@@ -75,6 +108,16 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.roll-metadata {
+    display: grid;
+    grid-template-rows: 1fr min-content;
+}
+.roll-player {
+    font-weight: bold;
+}
+.roll-time {
+    font-size: 0.8rem;
+}
 .dice-result {
     display: grid;
     grid-template-rows: min-content 1fr;
