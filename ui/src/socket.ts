@@ -16,7 +16,7 @@ const connectSocket = (gameId: string, playerId: string) => {
     );
 
     socket.on('connect', () => {
-        console.log(`%cGame Connected: ${gameId}`, 'color: #198754');
+        console.log(`%cGame Connected: ${gameId}`, 'color: #66ff00');
         socket.emit('getMarkers');
         socket.emit('getNormalRolls');
     });

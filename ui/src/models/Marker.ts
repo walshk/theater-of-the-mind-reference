@@ -9,6 +9,9 @@ export default class Marker {
     public radius: number;
     public condition: string;
     public height: number;
+    public layer: number;
+
+    private blinkingInterval: number | undefined;
 
     constructor(
         name: string,
@@ -19,6 +22,7 @@ export default class Marker {
         radius: number,
         condition = '',
         height = 0,
+        layer: number,
         id?: string
     ) {
         this.id = id ?? uuidv4();
@@ -31,6 +35,7 @@ export default class Marker {
         this.radius = radius;
         this.condition = condition;
         this.height = height;
+        this.layer = layer;
     }
 
     setName(name: string): void {
@@ -55,6 +60,10 @@ export default class Marker {
 
     setHeight(height: number): void {
         this.height = height;
+    }
+
+    setLayer(layer: number): void {
+        this.layer = layer;
     }
 
     moveMarkerTo(x: number, y: number): void {
@@ -92,6 +101,29 @@ export default class Marker {
             radius: this.radius,
             condition: this.condition,
             height: this.height,
+            layer: this.layer,
         });
+    }
+
+    toSvgString(): string {
+        return `
+        <svg class="marker-layer-svg" width="100%" height="100%" viewBox="0 0 200 200">
+            <g class="entity-marker">
+                    <circle
+                        class="border-circle"
+                        fill="black"
+                        cx="100"
+                        cy="100"
+                        r="90"
+                    ></circle>
+                    <circle
+                        fill="${this.color}"
+                        cx="100"
+                        cy="100"
+                        r="88"
+                    ></circle>
+                </g>
+            </svg>
+        `;
     }
 }

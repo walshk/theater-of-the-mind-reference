@@ -55,6 +55,10 @@ io.on('connection', async (socket) => {
     const gameId = socket.handshake.query.gameId + '::' ?? '';
     const playerId = decodeURIComponent(socket.handshake.query.playerId);
 
+    console.log(
+        `Player "${playerId}" joined game "${socket.handshake.query.gameId}"`
+    );
+
     socket.on('normalRoll', async (rollString) => {
         const defaultPlayerId = '++defaultPlayerId++';
         const updatedRollString = rollString.replace(defaultPlayerId, playerId);
@@ -67,6 +71,9 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('addMarker', async (markerString) => {
+        console.log(
+            `Player "${playerId}" added a marker to game "${socket.handshake.query.gameId}"`
+        );
         await addMarker(socket, markerString, gameId);
     });
 
@@ -83,6 +90,9 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('removeMarker', async (markerId) => {
+        console.log(
+            `Player "${playerId}" removed a marker from game "${socket.handshake.query.gameId}"`
+        );
         await removeMarker(socket, markerId, gameId);
     });
 });

@@ -8,7 +8,7 @@ export default class BattleMap {
     }
 
     getMarkers(): Marker[] {
-        return this.markers;
+        return this.markers.sort((a, b) => a.layer - b.layer);
     }
 
     addMarker(marker: Marker): void {
@@ -17,5 +17,9 @@ export default class BattleMap {
 
     removeMarker(markerId: string): void {
         this.markers = this.markers.filter((m) => m.id !== markerId);
+    }
+
+    getNextLayer(): number {
+        return this.markers.length;
     }
 }

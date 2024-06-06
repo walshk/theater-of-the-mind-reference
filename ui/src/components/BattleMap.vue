@@ -80,7 +80,7 @@
                     <b-icon-hammer />
                 </span>
                 <span
-                    class="tab-selector lower"
+                    class="tab-selector lower-2"
                     :class="{ selected: isSelectedTab(tabs.DICE) }"
                     :style="tabSelectorStyle"
                     @click="selectedTab = tabs.DICE"
@@ -88,13 +88,22 @@
                     <b-icon-dice-6 />
                 </span>
                 <span
-                    class="tab-selector lower-2"
+                    class="tab-selector lower-3"
                     :class="{ selected: isSelectedTab(tabs.LOG) }"
                     :style="tabSelectorStyle"
                     @click="selectedTab = tabs.LOG"
                 >
                     <b-icon-clock-history />
                 </span>
+                <span
+                    class="tab-selector lower"
+                    :class="{ selected: isSelectedTab(tabs.LAYERS) }"
+                    :style="tabSelectorStyle"
+                    @click="selectedTab = tabs.LAYERS"
+                >
+                    <b-icon-layers-fill />
+                </span>
+
                 <MarkerBuilder
                     v-if="selectedTab === tabs.BUILDER"
                     :marker="editingMarker"
@@ -108,6 +117,11 @@
                     @diceRoll="emitDiceRoll"
                 />
                 <RollLog v-if="selectedTab === tabs.LOG" :rolls="rollsLog" />
+                <LayerManager
+                    v-if="selectedTab === tabs.LAYERS"
+                    :markers="markers"
+                    @updateMarkerLayers="updateMarkerLayers"
+                />
             </b-col>
         </b-row>
     </b-container>
@@ -134,6 +148,8 @@ import RollLog from './RollLog.vue';
 
 import DiceResultComp from '@/models/DiceResultComp';
 
+import LayerManager from './LayerManager.vue';
+
 let socket: Socket;
 
 export default Vue.extend({
@@ -148,6 +164,7 @@ export default Vue.extend({
         DiceRoller,
         DiceResult,
         RollLog,
+        LayerManager,
     },
     mounted() {
         this.map = new BattleMap();
@@ -195,6 +212,7 @@ export default Vue.extend({
                 mData.radius,
                 mData.condition,
                 mData.height,
+                mData.layer,
                 mData.id
             );
             this.map.addMarker(marker);
@@ -234,6 +252,7 @@ export default Vue.extend({
                     markerToUpdate.setRadius(updatedMarker.radius);
                     markerToUpdate.setCondition(updatedMarker.condition);
                     markerToUpdate.setHeight(updatedMarker.height);
+                    markerToUpdate.setLayer(updatedMarker.layer);
                 }
             }
         );
@@ -258,6 +277,7 @@ export default Vue.extend({
                 BUILDER: 'builder',
                 DICE: 'dice',
                 LOG: 'log',
+                LAYERS: 'layers',
             },
             selectedTab: 'builder',
             diceResults: [] as Array<DiceResultComp>,
@@ -298,9 +318,12 @@ export default Vue.extend({
             size: string;
             condition: string;
             height: number;
+            layer: number;
         }): void {
             const { name, color, fontColor, size, condition, height } =
                 markerForm;
+
+            const layer = this.map.getNextLayer();
 
             const marker = new Marker(
                 name,
@@ -310,7 +333,8 @@ export default Vue.extend({
                 500,
                 +size,
                 condition,
-                height
+                height,
+                layer
             );
             this.map.addMarker(marker);
 
@@ -376,6 +400,12 @@ export default Vue.extend({
             const markerString = JSON.stringify(this.editingMarker);
             this.editingMarker = undefined;
             socket.emit('updateMarkerTraits', markerString);
+        },
+        updateMarkerLayers() {
+            for (let i = 0; i < this.markers.length; i++) {
+                const markerString = JSON.stringify(this.markers[i]);
+                socket.emit('updateMarkerTraits', markerString);
+            }
         },
         cancelEditMarker(): void {
             this.editingMarker = undefined;
@@ -495,6 +525,10 @@ export default Vue.extend({
 
 .tab-selector.lower-2 {
     top: calc(var(--tab-top) + 80px);
+}
+
+.tab-selector.lower-3 {
+    top: calc(var(--tab-top) + 120px);
 }
 
 .tab-selector.selected {
