@@ -55,7 +55,13 @@ export default class RollResult {
             return 0;
         }
 
-        if (this.advantage === 'advantage') {
+        if (!this.dice[20] || this.dice[20].length === 0) {
+            return Object.values(this.dice)
+                .flat()
+                .reduce((a, b) => a + b);
+        }
+
+        if (this.advantage === 'advantage' && this.dice[20].length > 0) {
             const d20Key = 20;
             const { [d20Key]: d20s, ...otherDice } = this.dice;
             const maxD20 = Math.max(...d20s);
@@ -67,7 +73,10 @@ export default class RollResult {
 
             const otherDiceTotal = otherDiceValues.reduce((a, b) => a + b);
             return maxD20 + otherDiceTotal;
-        } else if (this.advantage === 'disadvantage') {
+        } else if (
+            this.advantage === 'disadvantage' &&
+            this.dice[20].length > 0
+        ) {
             const d20Key = 20;
             const { [d20Key]: d20s, ...otherDice } = this.dice;
             const minD20 = Math.min(...d20s);
