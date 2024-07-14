@@ -117,6 +117,7 @@ export default Vue.extend({
 <style scoped>
 .entity-marker {
     filter: var(--marker-shadow);
+    user-select: none;
 }
 
 .entity-marker:hover {

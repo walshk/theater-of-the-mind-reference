@@ -71,11 +71,13 @@
         </div>
         <div class="modifier">
             <div class="modifier-title">Modifier:</div>
-            <b-form-spinbutton
-                v-model="modifier"
-                min="-100"
-                max="100"
-            ></b-form-spinbutton>
+            <b-input-group>
+                <b-form-input
+                    v-model="modifier"
+                    type="number"
+                    class="modifier-input"
+                ></b-form-input>
+            </b-input-group>
         </div>
         <div class="advantage">
             <b-form-radio-group
@@ -94,6 +96,17 @@
                 @click="rollDice"
                 >Roll</b-button
             >
+        </div>
+        <div class="reset-buttons" style="margin-top:2rem; display: flex; justify-content: space-around;">
+            <b-button @click="clearDice" size="sm" variant="outline-primary">
+                Clear Dice
+            </b-button>
+            <b-button @click="clearModifier" size="sm" variant="outline-primary">
+                Clear Modifier
+            </b-button>
+            <b-button @click="clearAll" size="sm" variant="outline-danger">
+                Clear All
+            </b-button>
         </div>
     </div>
 </template>
@@ -180,6 +193,20 @@ export default Vue.extend({
                 })
             );
         },
+        clearDice() {
+            const diceKeys = Object.keys(this.diceAmounts);
+            diceKeys.forEach((k: string) => {
+                const keyAsNumber = +k;
+                this.diceAmounts[keyAsNumber] = 0;
+            })
+        },
+        clearModifier() {
+            this.modifier = 0;
+        },
+        clearAll() {
+            this.clearDice();
+            this.clearModifier();            
+        }
     },
     computed: {
         disableRoll(): boolean {
@@ -209,7 +236,7 @@ export default Vue.extend({
 .dice-roller {
     display: grid;
 
-    grid-template-rows: repeat(5, min-content) 1fr;
+    grid-template-rows: repeat(5, min-content) min-content 1fr;
     grid-template-columns: 1fr;
 
     row-gap: 1rem;
@@ -241,6 +268,10 @@ export default Vue.extend({
     grid-row: 2;
     text-align: center;
     padding: 0;
+}
+
+.modifier-input {
+    text-align: center;
 }
 
 .modifier,

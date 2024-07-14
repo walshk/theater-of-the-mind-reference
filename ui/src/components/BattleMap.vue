@@ -103,25 +103,26 @@
                 >
                     <b-icon-layers-fill />
                 </span>
-
-                <MarkerBuilder
-                    v-if="selectedTab === tabs.BUILDER"
-                    :marker="editingMarker"
-                    @createMarker="addMarker"
-                    @updateMarker="updateMarker"
-                    @cancelEdit="cancelEditMarker"
-                    @removeMarker="removeMarker"
-                />
-                <DiceRoller
-                    v-if="selectedTab === tabs.DICE"
-                    @diceRoll="emitDiceRoll"
-                />
-                <RollLog v-if="selectedTab === tabs.LOG" :rolls="rollsLog" />
-                <LayerManager
-                    v-if="selectedTab === tabs.LAYERS"
-                    :markers="markers"
-                    @updateMarkerLayers="updateMarkerLayers"
-                />
+                <keep-alive>
+                    <MarkerBuilder
+                        v-if="selectedTab === tabs.BUILDER"
+                        :marker="editingMarker"
+                        @createMarker="addMarker"
+                        @updateMarker="updateMarker"
+                        @cancelEdit="cancelEditMarker"
+                        @removeMarker="removeMarker"
+                    />
+                    <DiceRoller
+                        v-if="selectedTab === tabs.DICE"
+                        @diceRoll="emitDiceRoll"
+                    />
+                    <RollLog v-if="selectedTab === tabs.LOG" :rolls="rollsLog" />
+                    <LayerManager
+                        v-if="selectedTab === tabs.LAYERS"
+                        :markers="markers"
+                        @updateMarkerLayers="updateMarkerLayers"
+                    />
+                </keep-alive>
             </b-col>
         </b-row>
     </b-container>
@@ -365,7 +366,7 @@ export default Vue.extend({
             this.editingMarker = undefined;
             socket.emit('removeMarker', markerId);
         },
-        pickUpMarker(data: any): void {
+        pickUpMarker(data: {marker: Marker, ref: HTMLElement}): void {
             this.selectedMarker = data.marker;
             this.selectedMarkerRef = data.ref;
             this.isDragging = true;

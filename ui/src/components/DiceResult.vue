@@ -99,7 +99,6 @@ export default defineComponent({
             const value = this.roll.value();
             const modifier = this.roll.modifier;
             const operator = modifier < 0 ? '-' : '+';
-            const total = value + modifier;
 
             return `${value} ${operator} ${Math.abs(modifier)} =`;
         },
