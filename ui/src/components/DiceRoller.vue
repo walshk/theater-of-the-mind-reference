@@ -187,7 +187,7 @@ export default Vue.extend({
                 'diceRoll',
                 JSON.stringify({
                     dice: rollValues,
-                    modifier: this.modifier,
+                    modifier: +this.modifier,
                     advantage: this.selectedAdvantageOption,
                     playerId: '++defaultPlayerId++',
                 })
