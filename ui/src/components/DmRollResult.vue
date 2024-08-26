@@ -54,13 +54,13 @@ export default defineComponent({
     },
     methods: {},
     computed: {
-        critSuccess() {
+        critSuccess(): boolean {
             return this.result === 'NAT 20';
         },
-        critFail() {
+        critFail(): boolean {
             return this.result === 'NAT 1';
         },
-        normalResult() {
+        normalResult(): boolean {
             return !this.critSuccess && !this.critFail;
         },
     },
