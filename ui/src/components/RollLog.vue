@@ -2,13 +2,23 @@
     <div class="roll-log">
         <h3 class="title">Roll History</h3>
         <div class="rolls">
-            <DiceResult
-                v-for="(roll, index) in rolls"
+            <div
+                v-for="(roll, index) in allRolls"
                 :key="`${roll.timestamp}-${index}`"
-                :roll="roll.rollResult"
-                :static="true"
-                :time="time(roll.timestamp)"
-            />
+            >
+                <DmRollResult
+                    v-if="roll.type === 'dm'"
+                    :result="roll.data"
+                    :static="true"
+                    :time="time(roll.timestamp)"
+                />
+                <DiceResult
+                    v-else
+                    :roll="roll.data.rollResult"
+                    :static="true"
+                    :time="time(roll.timestamp)"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -16,16 +26,37 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import DiceResult from './DiceResult.vue';
+import DmRollResult from './DmRollResult.vue';
 
 export default defineComponent({
     name: 'RollLog',
     components: {
         DiceResult,
+        DmRollResult,
     },
-    props: ['rolls'],
+    props: ['rolls', 'dmRolls'],
     methods: {
         time(timestamp: number): string {
             return new Date(timestamp).toLocaleString();
+        },
+    },
+    computed: {
+        allRolls(): any[] {
+            const normalRolls = this.rolls.map((rollData: any) => {
+                return {
+                    type: 'normal',
+                    data: rollData,
+                    timestamp: rollData.timestamp,
+                };
+            });
+            const dmRolls = this.dmRolls.map((rollData: any) => {
+                return {
+                    type: 'dm',
+                    data: rollData.result,
+                    timestamp: rollData.timestamp,
+                };
+            });
+            return normalRolls.concat(dmRolls).sort();
         },
     },
 });

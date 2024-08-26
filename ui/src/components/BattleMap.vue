@@ -7,7 +7,18 @@
                 id="battleMapCol"
             >
                 <div class="game-id-text">
-                    <span>Player Name: {{ playerId }}</span>
+                    <span
+                        >Player Name: {{ playerId
+                        }}<span
+                            v-if="isDM"
+                            style="
+                                padding-left: 4px;
+                                color: var(--bs-success);
+                                font-weight: bold;
+                            "
+                            >(DM)</span
+                        ></span
+                    >
                     <span>Game ID: {{ gameId }}</span>
                 </div>
                 <div class="results-area">
@@ -15,6 +26,11 @@
                         v-for="result in diceResults"
                         :key="result.id"
                         :roll="result.roll"
+                    />
+                    <DmRollResult
+                        v-for="result in dmResults"
+                        :key="result.id"
+                        :result="result.dmRollValue"
                     />
                 </div>
 
@@ -115,8 +131,13 @@
                     <DiceRoller
                         v-if="selectedTab === tabs.DICE"
                         @diceRoll="emitDiceRoll"
+                        @dmRoll="emitDmRoll"
                     />
-                    <RollLog v-if="selectedTab === tabs.LOG" :rolls="rollsLog" />
+                    <RollLog
+                        v-if="selectedTab === tabs.LOG"
+                        :rolls="rollsLog"
+                        :dmRolls="dmRollsLog"
+                    />
                     <LayerManager
                         v-if="selectedTab === tabs.LAYERS"
                         :markers="markers"
@@ -139,6 +160,7 @@ import EntityMarker from '@/components/EntityMarker.vue';
 import MarkerBuilder from './MarkerBuilder.vue';
 import DiceRoller from './DiceRoller.vue';
 import DiceResult from './DiceResult.vue';
+import DmRollResult from './DmRollResult.vue';
 
 import connectSocket from '@/socket';
 import { Socket } from 'socket.io-client';
@@ -158,12 +180,14 @@ export default Vue.extend({
     props: {
         gameId: String,
         playerId: String,
+        enterAsDm: Boolean,
     },
     components: {
         EntityMarker,
         MarkerBuilder,
         DiceRoller,
         DiceResult,
+        DmRollResult,
         RollLog,
         LayerManager,
     },
@@ -171,7 +195,7 @@ export default Vue.extend({
         this.map = new BattleMap();
         this.pageResized = !this.pageResized;
 
-        socket = connectSocket(this.gameId, this.playerId);
+        socket = connectSocket(this.gameId, this.playerId, this.enterAsDm);
         this.$emit('setSocket', socket);
 
         socket.connect();
@@ -198,8 +222,27 @@ export default Vue.extend({
             }
         );
 
+        socket.on(
+            `${this.gameIdSafe}::addDmRollToLog`,
+            (rollStringWithTimestamp: string) => {
+                const parts = rollStringWithTimestamp.split('::timestamp::');
+
+                const timestamp = +parts.slice(-1)[0];
+                const rollString = parts[0];
+
+                this.dmRollsLog.unshift({
+                    timestamp,
+                    result: rollString,
+                });
+            }
+        );
+
         socket.on(`${this.gameIdSafe}::normalRoll`, (rollString: string) => {
             this.displayRoll(rollString);
+        });
+
+        socket.on(`${this.gameIdSafe}::dmRoll`, (dmRollValue: string) => {
+            this.displayDmRoll(dmRollValue);
         });
 
         socket.on(`${this.gameIdSafe}::addMarker`, (markerString: string) => {
@@ -282,8 +325,13 @@ export default Vue.extend({
             },
             selectedTab: 'builder',
             diceResults: [] as Array<DiceResultComp>,
+            dmResults: [] as Array<any>,
             rollsLog: [] as Array<{
                 rollResult: RollResult;
+                timestamp: number;
+            }>,
+            dmRollsLog: [] as Array<{
+                result: string;
                 timestamp: number;
             }>,
         };
@@ -291,6 +339,17 @@ export default Vue.extend({
     methods: {
         emitDiceRoll(rollString: string) {
             socket.emit('normalRoll', rollString);
+        },
+
+        emitDmRoll(rollString: string) {
+            this.displayRoll(rollString);
+            const result = this.calculateDmRollResult(rollString);
+            socket.emit('dmRoll', result);
+        },
+
+        calculateDmRollResult(rollString: string): string {
+            const roll = new RollResult(rollString);
+            return roll.dmValue();
         },
 
         displayRoll(rollString: string) {
@@ -309,6 +368,19 @@ export default Vue.extend({
                 );
             }, duration);
         },
+
+        displayDmRoll(dmRollValue: string) {
+            const result = { id: uuidv4(), dmRollValue: dmRollValue };
+            this.dmResults.push(result);
+
+            const duration = 5300;
+            setTimeout(() => {
+                this.dmResults = this.dmResults.filter((r: any) => {
+                    return r.id !== result.id;
+                });
+            }, duration);
+        },
+
         isSelectedTab(tabName: string): boolean {
             return this.selectedTab === tabName;
         },
@@ -366,7 +438,7 @@ export default Vue.extend({
             this.editingMarker = undefined;
             socket.emit('removeMarker', markerId);
         },
-        pickUpMarker(data: {marker: Marker, ref: HTMLElement}): void {
+        pickUpMarker(data: { marker: Marker; ref: HTMLElement }): void {
             this.selectedMarker = data.marker;
             this.selectedMarkerRef = data.ref;
             this.isDragging = true;
@@ -464,6 +536,9 @@ export default Vue.extend({
                 '--tab-top': `${top}px`,
                 '--tab-left': `${left}px`,
             };
+        },
+        isDM() {
+            return this.$store.state.isDM;
         },
     },
 });

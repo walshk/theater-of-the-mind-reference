@@ -70,6 +70,17 @@ export async function addNormalRollToLog(io, rollString, gameId = '') {
     await dbSet(rollKey, `${rollString}::timestamp::${timestamp}`);
 }
 
+export async function addDmRollToLog(io, dmRollValue, gameId = '') {
+    const timestamp = Date.now();
+    io.emit(
+        `${gameId}addDmRollToLog`,
+        `${dmRollValue}::timestamp::${timestamp}`
+    )
+    const rollKey = `${gameId}saved-dm-roll::${timestamp}`;
+
+    await dbSet(rollKey, `${dmRollValue}::timestamp::${timestamp}`);
+}
+
 export async function getNormalRolls(socket, gameId = '') {
     const rollKeys = await dbKeys(`${gameId}saved-die-roll::*`);
 
@@ -86,3 +97,21 @@ export async function getNormalRolls(socket, gameId = '') {
         }
     }
 }
+
+export async function getDmRolls(socket, gameId = '') {
+    const rollKeys = await dbKeys(`${gameId}saved-dm-roll::*`);
+
+    if (rollKeys.length > 0) {
+        const rolls = await dbGetMultiple(rollKeys);
+        rolls.sort((keyA, keyB) => {
+            const timeA = +keyA.split('::timestamp::').at(-1);
+            const timeB = +keyB.split('::timestamp::').at(-1);
+            return timeA - timeB;
+        });
+
+        for (let i = 0; i < rolls.length; i++) {
+            socket.emit(`${gameId}addDmRollToLog`, rolls[i]);
+        }
+    }
+}
+

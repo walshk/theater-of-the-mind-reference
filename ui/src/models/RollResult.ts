@@ -49,6 +49,44 @@ export default class RollResult {
         return Object.values(this.dice).flat().length;
     }
 
+    isCritSuccess(): boolean {
+        if (!this.dice[20] || this.dice[20].length === 0) return false;
+
+        if (this.advantage === 'advantage' || this.dice[20].length === 1) {
+            const maxD20 = Math.max(...this.dice[20]);
+            return maxD20 === 20;
+        } else if (this.advantage === 'disadvantage') {
+            const minD20 = Math.min(...this.dice[20]);
+            return minD20 === 20;
+        }
+        return false;
+    }
+
+    isCritFail(): boolean {
+        if (!this.dice[20] || this.dice[20].length === 0) return false;
+
+        if (this.advantage === 'advantage' || this.dice[20].length === 1) {
+            const maxD20 = Math.max(...this.dice[20]);
+            return maxD20 === 1;
+        } else if (this.advantage === 'disadvantage') {
+            const minD20 = Math.min(...this.dice[20]);
+            return minD20 === 1;
+        }
+        return false;
+    }
+
+    dmValue(): string {
+        if (this.isCritSuccess()) {
+            return 'NAT 20';
+        }
+
+        if (this.isCritFail()) {
+            return 'NAT 1';
+        }
+
+        return String(this.value());
+    }
+
     value(): number {
         const numDice = this.numDice();
         if (numDice === 0) {

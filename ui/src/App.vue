@@ -7,6 +7,7 @@
             v-if="gameJoined"
             :gameId="gameId"
             :playerId="playerId"
+            :enterAsDm="enterAsDm"
             @setSocket="setSocket"
         />
         <JoinGame v-else @joinedGame="joinedGame" />
@@ -32,14 +33,16 @@ export default Vue.extend({
             gameJoined: false,
             gameId: '',
             playerId: '',
+            enterAsDm: false,
             socket: undefined as Socket | undefined,
         };
     },
     methods: {
-        joinedGame(gameId: string, playerId: string) {
+        joinedGame(gameId: string, playerId: string, enterAsDm: boolean) {
             this.gameId = gameId;
             this.playerId = playerId;
             this.gameJoined = true;
+            this.enterAsDm = enterAsDm;
         },
         setSocket(socket: Socket) {
             this.socket = socket;

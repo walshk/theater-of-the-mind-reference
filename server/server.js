@@ -11,8 +11,12 @@ import {
     removeMarker,
     updateMarkerTraits,
     addNormalRollToLog,
+    addDmRollToLog,
     getNormalRolls,
+    getDmRolls
 } from './eventController.js';
+
+import { getDm, setDm, unsetDm } from './dmManager.js'
 
 const sessionMiddleware = session({
     secret: 'test-secret', // TODO: change secret
@@ -41,9 +45,23 @@ const io = new Server(server, {
 });
 io.engine.use(sessionMiddleware);
 
-app.post('/join/:gameId', (req, res) => {
+app.post('/join/:gameId', async (req, res) => {
     const gameId = req.params.gameId;
     const playerId = req.body.playerId;
+    const enterAsDM = req.body.enterAsDM;
+
+    if (enterAsDM) {
+        const currentDm = await getDm(gameId);
+        if (currentDm && currentDm !== playerId) {
+            res.status(409).send(`Player "${currentDm}" is already the DM for game "${gameId}"`);
+            return;
+        } else if (currentDm === playerId) {
+            res.status(409).send(`Player Name "${currentDm}" is already in use by the DM of game "${gameId}". Please use a different Player Name.`)
+            return;
+        } else {
+            await setDm(gameId, playerId);
+        }
+    }
 
     req.session.gameId = gameId;
     req.session.playerId = playerId;
@@ -52,12 +70,21 @@ app.post('/join/:gameId', (req, res) => {
 });
 
 io.on('connection', async (socket) => {
-    const gameId = socket.handshake.query.gameId + '::' ?? '';
+    const gameIdRaw = socket.handshake.query.gameId;
+    const gameId = gameIdRaw ? `${gameIdRaw}::` : '';
     const playerId = decodeURIComponent(socket.handshake.query.playerId);
+    const isDm = socket.handshake.query.enterAsDm;
 
-    console.log(
-        `Player "${playerId}" joined game "${socket.handshake.query.gameId}"`
-    );
+    if (isDm) {
+        console.log(
+            `Player "${playerId}" joined game "${gameIdRaw}" as the DM`
+        );
+    } else {
+        console.log(
+            `Player "${playerId}" joined game "${gameIdRaw}"`
+        );
+    }
+    
 
     socket.on('normalRoll', async (rollString) => {
         const defaultPlayerId = '++defaultPlayerId++';
@@ -66,13 +93,22 @@ io.on('connection', async (socket) => {
         await addNormalRollToLog(io, updatedRollString, gameId);
     });
 
+    socket.on('dmRoll', async (dmRollValue) => {
+        io.emit(`${gameId}dmRoll`, dmRollValue);
+        await addDmRollToLog(io, dmRollValue, gameId);
+    })
+
     socket.on('getNormalRolls', async () => {
         await getNormalRolls(socket, gameId);
     });
 
+    socket.on('getDmRolls', async () => {
+        await getDmRolls(socket, gameId);
+    })
+
     socket.on('addMarker', async (markerString) => {
         console.log(
-            `Player "${playerId}" added a marker to game "${socket.handshake.query.gameId}"`
+            `Player "${playerId}" added a marker to game "${gameIdRaw}"`
         );
         await addMarker(socket, markerString, gameId);
     });
@@ -91,10 +127,20 @@ io.on('connection', async (socket) => {
 
     socket.on('removeMarker', async (markerId) => {
         console.log(
-            `Player "${playerId}" removed a marker from game "${socket.handshake.query.gameId}"`
+            `Player "${playerId}" removed a marker from game "${gameIdRaw}"`
         );
         await removeMarker(socket, markerId, gameId);
     });
+
+    socket.on('disconnect', async () => {
+        if (isDm) {
+            console.log(`DM "${playerId}" left game "${gameIdRaw}"`);
+            await unsetDm(gameIdRaw);
+        } else {
+            console.log(`Player "${playerId}" left game "${gameIdRaw}"`)
+        }
+    });
+
 });
 
 server.listen(3333, () => {

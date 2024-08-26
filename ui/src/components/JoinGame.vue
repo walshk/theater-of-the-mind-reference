@@ -19,6 +19,17 @@
                     @keyup="submitIfEnter"
                 ></b-form-input>
             </b-form-group>
+
+            <b-form-group
+                inline
+                label="I am the DM for this game"
+                label-for="is-dm"
+            >
+                <b-form-checkbox v-model="enterAsDM" id="is-dm" />
+            </b-form-group>
+            <b-alert variant="warning" :show="invalidDM">
+                {{ invalidDMMessage }}
+            </b-alert>
         </div>
         <div class="join-button">
             <b-button
@@ -42,6 +53,9 @@ export default Vue.extend({
         return {
             gameId: '',
             playerId: '',
+            enterAsDM: false,
+            invalidDM: false,
+            invalidDMMessage: '',
         };
     },
     methods: {
@@ -49,10 +63,24 @@ export default Vue.extend({
             try {
                 await API.post(`/join/${encodeURIComponent(this.gameId)}`, {
                     playerId: this.playerId,
+                    enterAsDM: this.enterAsDM,
                 });
-                this.$emit('joinedGame', this.gameId, this.playerId);
-            } catch (err) {
+
+                if (this.enterAsDM) {
+                    this.$store.dispatch('setAsDM');
+                }
+                this.$emit(
+                    'joinedGame',
+                    this.gameId,
+                    this.playerId,
+                    this.enterAsDM
+                );
+            } catch (err: any) {
                 console.error('Error joining game: ', err);
+                if (err?.response?.status === 409) {
+                    this.invalidDMMessage = err.response.data;
+                    this.showInvalidDM();
+                }
             }
         },
         submitIfEnter(event: KeyboardEvent) {
@@ -63,6 +91,9 @@ export default Vue.extend({
             if (event.key === 'Enter') {
                 this.joinGame();
             }
+        },
+        showInvalidDM() {
+            this.invalidDM = true;
         },
     },
     computed: {},

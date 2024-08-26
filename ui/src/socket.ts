@@ -5,11 +5,16 @@ const URL =
         ? `https://${window.location.host}`
         : 'ws://localhost:3333';
 
-const connectSocket = (gameId: string, playerId: string) => {
+const connectSocket = (
+    gameId: string,
+    playerId: string,
+    enterAsDm: boolean
+) => {
     const gameIdEncoded = encodeURIComponent(gameId);
     const playerIdEncoded = encodeURIComponent(playerId);
+    const enterAsDmString = enterAsDm ? '&enterAsDm=true' : '';
     const socket = io(
-        `${URL}?gameId=${gameIdEncoded}&playerId=${playerIdEncoded}`,
+        `${URL}?gameId=${gameIdEncoded}&playerId=${playerIdEncoded}${enterAsDmString}`,
         {
             withCredentials: true,
         }
@@ -19,6 +24,7 @@ const connectSocket = (gameId: string, playerId: string) => {
         console.log(`%cGame Connected: ${gameId}`, 'color: #66ff00');
         socket.emit('getMarkers');
         socket.emit('getNormalRolls');
+        socket.emit('getDmRolls');
     });
 
     socket.on('disconnect', () => {

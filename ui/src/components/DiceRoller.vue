@@ -93,15 +93,41 @@
             <b-button
                 :disabled="disableRoll"
                 variant="success"
-                @click="rollDice"
+                @click="rollDice(false)"
+                v-if="!isDM"
                 >Roll</b-button
             >
+            <b-button
+                :disabled="disableRoll"
+                variant="success"
+                @click="rollDice(false)"
+                v-if="isDM"
+                >Public Roll</b-button
+            >
+            <b-button
+                :disabled="disableRoll"
+                variant="warning"
+                @click="rollDice(true)"
+                v-if="isDM"
+                >DM Roll</b-button
+            >
         </div>
-        <div class="reset-buttons" style="margin-top:2rem; display: flex; justify-content: space-around;">
+        <div
+            class="reset-buttons"
+            style="
+                margin-top: 2rem;
+                display: flex;
+                justify-content: space-around;
+            "
+        >
             <b-button @click="clearDice" size="sm" variant="outline-primary">
                 Clear Dice
             </b-button>
-            <b-button @click="clearModifier" size="sm" variant="outline-primary">
+            <b-button
+                @click="clearModifier"
+                size="sm"
+                variant="outline-primary"
+            >
                 Clear Modifier
             </b-button>
             <b-button @click="clearAll" size="sm" variant="outline-danger">
@@ -171,7 +197,7 @@ export default Vue.extend({
             max = Math.floor(max);
             return Math.floor(Math.random() * (max - min) + min);
         },
-        rollDice() {
+        rollDice(dmRoll: boolean) {
             let rollValues = {} as { [key: number]: Array<number> };
             for (let dieValue in this.diceAmounts) {
                 if (!Object.keys(rollValues).includes(dieValue)) {
@@ -183,30 +209,43 @@ export default Vue.extend({
                     rollValues[dieValue].push(roll);
                 }
             }
-            this.$emit(
-                'diceRoll',
-                JSON.stringify({
-                    dice: rollValues,
-                    modifier: +this.modifier,
-                    advantage: this.selectedAdvantageOption,
-                    playerId: '++defaultPlayerId++',
-                })
-            );
+
+            if (dmRoll) {
+                this.$emit(
+                    'dmRoll',
+                    JSON.stringify({
+                        dice: rollValues,
+                        modifier: +this.modifier,
+                        advantage: this.selectedAdvantageOption,
+                        playerId: 'DM ROLL (only you see this)',
+                    })
+                );
+            } else {
+                this.$emit(
+                    'diceRoll',
+                    JSON.stringify({
+                        dice: rollValues,
+                        modifier: +this.modifier,
+                        advantage: this.selectedAdvantageOption,
+                        playerId: '++defaultPlayerId++',
+                    })
+                );
+            }
         },
         clearDice() {
             const diceKeys = Object.keys(this.diceAmounts);
             diceKeys.forEach((k: string) => {
                 const keyAsNumber = +k;
                 this.diceAmounts[keyAsNumber] = 0;
-            })
+            });
         },
         clearModifier() {
             this.modifier = 0;
         },
         clearAll() {
             this.clearDice();
-            this.clearModifier();            
-        }
+            this.clearModifier();
+        },
     },
     computed: {
         disableRoll(): boolean {
@@ -227,6 +266,9 @@ export default Vue.extend({
             };
 
             return helperTexts[this.selectedAdvantageOption];
+        },
+        isDM() {
+            return this.$store.state.isDM;
         },
     },
 });
@@ -277,6 +319,10 @@ export default Vue.extend({
 .modifier,
 .roll-button {
     margin-top: 1rem;
+}
+
+.roll-button .btn:last-child {
+    margin-left: 1rem;
 }
 </style>
 
