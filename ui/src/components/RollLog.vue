@@ -56,7 +56,16 @@ export default defineComponent({
                     timestamp: rollData.timestamp,
                 };
             });
-            return normalRolls.concat(dmRolls).sort();
+            return normalRolls
+                .concat(dmRolls)
+                .sort(
+                    (
+                        a: { type: string; data: any; timestamp: number },
+                        b: { type: string; data: any; timestamp: number }
+                    ) => {
+                        return a.timestamp - b.timestamp;
+                    }
+                );
         },
     },
 });
