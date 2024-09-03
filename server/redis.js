@@ -14,7 +14,7 @@ client.on('error', (err) => console.log('Redis Client Error', err));
 await client.connect();
 
 async function dbSet(key, val) {
-    if (key.includes('saved-die-roll::')) {
+    if (key.includes('saved-die-roll::') || key.includes('saved-dm-roll::')) {
         await client.setEx(key, 43200, val); // set keys for die rolls to expire after 12 hours
     } else {
         await client.setEx(key, 31536000, val); // set other keys to expire after 1 year
