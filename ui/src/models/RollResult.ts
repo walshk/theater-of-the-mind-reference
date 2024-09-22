@@ -84,7 +84,7 @@ export default class RollResult {
             return 'NAT 1';
         }
 
-        return String(this.value());
+        return String(this.value() + this.modifier);
     }
 
     value(): number {

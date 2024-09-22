@@ -63,7 +63,7 @@ export default defineComponent({
                         a: { type: string; data: any; timestamp: number },
                         b: { type: string; data: any; timestamp: number }
                     ) => {
-                        return a.timestamp - b.timestamp;
+                        return b.timestamp - a.timestamp;
                     }
                 );
         },
