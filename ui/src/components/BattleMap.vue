@@ -42,6 +42,8 @@
                     ref="map"
                     @mousemove="onMousemove"
                     @mouseup="putDownMarker"
+                    @mousedown="handleMouseDown"
+                    @wheel.stop="handleScrollWheel"
                 >
                     <defs>
                         <pattern
@@ -53,17 +55,18 @@
                             <path
                                 d="M 80 0 L 0 0 0 80"
                                 fill="none"
-                                stroke="gray"
-                                stroke-width="1"
+                                stroke="black"
+                                stroke-width="2"
+                                opacity="0.5"
                             />
                         </pattern>
                     </defs>
 
                     <rect
-                        x="-2000"
-                        y="-2000"
-                        width="4000"
-                        height="4000"
+                        x="-1000"
+                        y="-1000"
+                        width="3000"
+                        height="3000"
                         fill="url(#grid)"
                     />
                     <EntityMarker
@@ -86,7 +89,12 @@
                     <span>Drag Here to Delete</span>
                 </div>
             </b-col>
-            <b-col ref="rightCol" lg="3" class="fullHeight d-none d-lg-block">
+            <b-col
+                ref="rightCol"
+                xs="12"
+                md="3"
+                class="fullHeight d-none d-lg-block"
+            >
                 <span
                     class="tab-selector"
                     :class="{ selected: isSelectedTab(tabs.BUILDER) }"
@@ -303,7 +311,9 @@ export default Vue.extend({
 
         window.addEventListener('resize', () => {
             this.pageResized = !this.pageResized;
+            this.updateRatio();
         });
+        this.updateRatio();
     },
     data() {
         return {
@@ -312,10 +322,16 @@ export default Vue.extend({
             selectedMarkerRef: undefined as HTMLElement | undefined,
             editingMarker: undefined as Marker | undefined,
             isDragging: false,
+            isPanning: false,
+            panOrigin: {
+                x: 0,
+                y: 0,
+            },
             currentLocation: {
                 x: 0,
                 y: 0,
             },
+            ratio: 0,
             pageResized: false,
             tabs: {
                 BUILDER: 'builder',
@@ -337,6 +353,16 @@ export default Vue.extend({
         };
     },
     methods: {
+        updateRatio() {
+            const svg = this.$refs.map as any;
+
+            let [x, y, width, height] = svg
+                .getAttribute('viewBox')
+                .split(' ')
+                .map(Number);
+
+            this.ratio = width / svg.getBoundingClientRect().width;
+        },
         emitDiceRoll(rollString: string) {
             socket.emit('normalRoll', rollString);
         },
@@ -416,6 +442,34 @@ export default Vue.extend({
         onMousemove(event: MouseEvent): void {
             event.preventDefault();
 
+            if (this.isPanning && this.screenCTM) {
+                const svg = this.$refs.map as any;
+
+                let [x, y, width, height] = svg
+                    .getAttribute('viewBox')
+                    .split(' ')
+                    .map(Number);
+
+                const newX =
+                    (event.clientX - this.screenCTM.e) / this.screenCTM.a;
+                const newY =
+                    (event.clientY - this.screenCTM.f) / this.screenCTM.d;
+
+                const offsetX = newX - this.panOrigin.x;
+                const offsetY = newY - this.panOrigin.y;
+
+                const updatedX = x - offsetX * this.ratio;
+                const updatedY = y - offsetY * this.ratio;
+
+                console.log(updatedX, updatedY);
+
+                svg.setAttribute(
+                    'viewBox',
+                    `${updatedX} ${updatedY} ${width} ${height}`
+                );
+                this.pageResized = !this.pageResized;
+            }
+
             if (this.selectedMarker && this.isDragging && this.screenCTM) {
                 const newX =
                     (event.clientX - this.screenCTM.e) / this.screenCTM.a;
@@ -444,6 +498,12 @@ export default Vue.extend({
             this.isDragging = true;
         },
         putDownMarker(): void {
+            if (this.isPanning) {
+                this.isPanning = false;
+                console.log('stopped panning');
+                return;
+            }
+
             if (this.selectedMarker && this.isDragging) {
                 this.isDragging = false;
 
@@ -482,6 +542,62 @@ export default Vue.extend({
         },
         cancelEditMarker(): void {
             this.editingMarker = undefined;
+        },
+        handleScrollWheel(event: any): void {
+            const svg = this.$refs.map as any;
+            event.preventDefault();
+
+            // set the scaling factor (and make sure it's at least 10%)
+            let scale = event.deltaY / 1000;
+            scale =
+                Math.abs(scale) < 0.1
+                    ? (0.1 * event.deltaY) / Math.abs(event.deltaY)
+                    : scale;
+
+            // get point in SVG space
+            let pt = new DOMPoint(event.clientX, event.clientY);
+            pt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+            // get viewbox transform
+            let [x, y, width, height] = svg
+                .getAttribute('viewBox')
+                .split(' ')
+                .map(Number);
+
+            // get pt.x as a proportion of width and pt.y as proportion of height
+            let [xPropW, yPropH] = [(pt.x - x) / width, (pt.y - y) / height];
+
+            // calc new width and height, new x2, y2 (using proportions and new width and height)
+            let [width2, height2] = [
+                width + width * scale,
+                height + height * scale,
+            ];
+            let x2 = pt.x - xPropW * width2;
+            let y2 = pt.y - yPropH * height2;
+
+            if (width2 > width && width2 > 2000) {
+                return;
+            }
+
+            svg.setAttribute('viewBox', `${x2} ${y2} ${width2} ${height2}`);
+            this.updateRatio();
+            this.pageResized = !this.pageResized;
+        },
+        handleMouseDown(event: MouseEvent) {
+            console.log('started panning');
+            if (this.screenCTM) {
+                this.isPanning = true;
+
+                const newX =
+                    (event.clientX - this.screenCTM.e) / this.screenCTM.a;
+                const newY =
+                    (event.clientY - this.screenCTM.f) / this.screenCTM.d;
+
+                this.panOrigin = {
+                    x: newX,
+                    y: newY,
+                };
+            }
         },
     },
     computed: {
@@ -555,6 +671,10 @@ export default Vue.extend({
     background: lightgrey;
     height: 100%;
     width: 100%;
+}
+
+.battle-map-svg:hover {
+    cursor: move;
 }
 
 #battleMapCol {

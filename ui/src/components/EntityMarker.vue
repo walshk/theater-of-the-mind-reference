@@ -2,7 +2,7 @@
     <g
         class="entity-marker"
         :style="markerStyles"
-        @mousedown="pickUp"
+        @mousedown.stop="pickUp"
         @click.right="edit"
         ref="marker"
     >
