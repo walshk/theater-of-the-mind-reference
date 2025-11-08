@@ -1,156 +1,78 @@
 <template>
     <b-container class="battle-map" fluid>
         <b-row class="fullHeight">
-            <b-col
-                class="fullHeight"
-                style="padding-left: 0; padding-right: 1px"
-                id="battleMapCol"
-            >
-                <div class="game-id-text">
-                    <span
-                        >Player Name: {{ playerId
-                        }}<span
-                            v-if="isDM"
-                            style="
-                                padding-left: 4px;
-                                color: var(--bs-success);
-                                font-weight: bold;
-                            "
-                            >(DM)</span
-                        ></span
-                    >
-                    <span>Game ID: {{ gameId }}</span>
-                </div>
-                <div class="results-area">
-                    <DiceResult
-                        v-for="result in diceResults"
-                        :key="result.id"
-                        :roll="result.roll"
-                    />
-                    <DmRollResult
-                        v-for="result in dmResults"
-                        :key="result.id"
-                        :result="result.dmRollValue"
-                    />
+            <b-col class="fullHeight" style="padding-left: 0; padding-right: 1px" id="battleMapCol">
+                <div class="top-left-info">
+                    <div class="game-id-text">
+                        <span>Player Name: {{ playerId
+                            }}<span v-if="isDM" style="
+                                    padding-left: 4px;
+                                    color: var(--bs-success);
+                                    font-weight: bold;
+                                ">(DM)</span></span>
+                        <span>Game ID: {{ gameId }}</span>
+                        <span>Players:</span>
+                        <div class="players-list">
+                            <ul style="padding-left: 1rem;">
+                                <li v-for="player in activePlayers" :key="player">
+                                    <span style="color: white;">{{ player }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <span class="back-button" @click="goBack">
+                        <b-icon-arrow-left />Back
+                    </span>
                 </div>
 
-                <svg
-                    class="battle-map-svg"
-                    width="100%"
-                    height="100%"
-                    viewBox="0 0 1000 1000"
-                    ref="map"
-                    @mousemove="onMousemove"
-                    @mouseup="putDownMarker"
-                    @mousedown="handleMouseDown"
-                    @wheel.stop="handleScrollWheel"
-                >
+                <div class="results-area">
+                    <DiceResult v-for="result in diceResults" :key="result.id" :roll="result.roll" />
+                    <DmRollResult v-for="result in dmResults" :key="result.id" :result="result.dmRollValue" />
+                </div>
+
+                <svg class="battle-map-svg" width="100%" height="100%" viewBox="0 0 1000 1000" ref="map"
+                    @mousemove="onMousemove" @mouseup="putDownMarker" @mousedown="handleMouseDown"
+                    @wheel.stop="handleScrollWheel">
                     <defs>
-                        <pattern
-                            id="grid"
-                            width="80"
-                            height="80"
-                            patternUnits="userSpaceOnUse"
-                        >
-                            <path
-                                d="M 80 0 L 0 0 0 80"
-                                fill="none"
-                                stroke="black"
-                                stroke-width="2"
-                                opacity="0.5"
-                            />
+                        <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+                            <path d="M 80 0 L 0 0 0 80" fill="none" stroke="black" stroke-width="2" opacity="0.5" />
                         </pattern>
                     </defs>
 
-                    <rect
-                        x="-1000"
-                        y="-1000"
-                        width="3000"
-                        height="3000"
-                        fill="url(#grid)"
-                    />
-                    <EntityMarker
-                        v-for="(marker, index) in markers"
-                        :key="`${marker.name}-${index}`"
-                        :marker="marker"
-                        :dragging="isDragging"
-                        @editMarker="editMarker"
-                        @pickUp="pickUpMarker"
-                    />
+                    <rect x="-1000" y="-1000" width="3000" height="3000" fill="url(#grid)" />
+                    <EntityMarker v-for="(marker, index) in markers" :key="`${marker.name}-${index}`" :marker="marker"
+                        :dragging="isDragging" @editMarker="editMarker" @pickUp="pickUpMarker" />
                 </svg>
-                <div
-                    id="trashArea"
-                    ref="trashArea"
-                    :style="trashAreaStyle"
-                    @mousemove="onMousemove"
-                    @mouseup="putDownMarker"
-                >
+                <div id="trashArea" ref="trashArea" :style="trashAreaStyle" @mousemove="onMousemove"
+                    @mouseup="putDownMarker">
                     <b-icon-trash style="margin-right: 1rem" />
                     <span>Drag Here to Delete</span>
                 </div>
             </b-col>
-            <b-col
-                ref="rightCol"
-                xs="12"
-                md="3"
-                class="fullHeight d-none d-lg-block"
-            >
-                <span
-                    class="tab-selector"
-                    :class="{ selected: isSelectedTab(tabs.BUILDER) }"
-                    :style="tabSelectorStyle"
-                    @click="selectedTab = tabs.BUILDER"
-                >
+            <b-col ref="rightCol" xs="12" md="3" class="fullHeight d-none d-lg-block">
+                <span class="tab-selector" :class="{ selected: isSelectedTab(tabs.BUILDER) }" :style="tabSelectorStyle"
+                    @click="selectedTab = tabs.BUILDER">
                     <b-icon-hammer />
                 </span>
-                <span
-                    class="tab-selector lower-2"
-                    :class="{ selected: isSelectedTab(tabs.DICE) }"
-                    :style="tabSelectorStyle"
-                    @click="selectedTab = tabs.DICE"
-                >
+                <span class="tab-selector lower-2" :class="{ selected: isSelectedTab(tabs.DICE) }"
+                    :style="tabSelectorStyle" @click="selectedTab = tabs.DICE">
                     <b-icon-dice-6 />
                 </span>
-                <span
-                    class="tab-selector lower-3"
-                    :class="{ selected: isSelectedTab(tabs.LOG) }"
-                    :style="tabSelectorStyle"
-                    @click="selectedTab = tabs.LOG"
-                >
+                <span class="tab-selector lower-3" :class="{ selected: isSelectedTab(tabs.LOG) }"
+                    :style="tabSelectorStyle" @click="selectedTab = tabs.LOG">
                     <b-icon-clock-history />
                 </span>
-                <span
-                    class="tab-selector lower"
-                    :class="{ selected: isSelectedTab(tabs.LAYERS) }"
-                    :style="tabSelectorStyle"
-                    @click="selectedTab = tabs.LAYERS"
-                >
+                <span class="tab-selector lower" :class="{ selected: isSelectedTab(tabs.LAYERS) }"
+                    :style="tabSelectorStyle" @click="selectedTab = tabs.LAYERS">
                     <b-icon-layers-fill />
                 </span>
                 <keep-alive>
-                    <MarkerBuilder
-                        v-if="selectedTab === tabs.BUILDER"
-                        :marker="editingMarker"
-                        @createMarker="addMarker"
-                        @updateMarker="updateMarker"
-                        @cancelEdit="cancelEditMarker"
-                        @removeMarker="removeMarker"
-                    />
-                    <DiceRoller
-                        v-if="selectedTab === tabs.DICE"
-                        @diceRoll="emitDiceRoll"
-                        @dmRoll="emitDmRoll"
-                    />
-                    <RollLog
-                        v-if="selectedTab === tabs.LOG"
-                        :rolls="rollsLog"
-                        :dmRolls="dmRollsLog"
-                    />
-                    <LayerManager
-                        v-if="selectedTab === tabs.LAYERS"
-                        :markers="markers"
-                        @updateMarkerLayers="updateMarkerLayers"
-                    />
+                    <MarkerBuilder v-if="selectedTab === tabs.BUILDER" :marker="editingMarker" @createMarker="addMarker"
+                        @updateMarker="updateMarker" @cancelEdit="cancelEditMarker" @removeMarker="removeMarker" />
+                    <DiceRoller v-if="selectedTab === tabs.DICE" @diceRoll="emitDiceRoll" @dmRoll="emitDmRoll" />
+                    <RollLog v-if="selectedTab === tabs.LOG" :rolls="rollsLog" :dmRolls="dmRollsLog" />
+                    <LayerManager v-if="selectedTab === tabs.LAYERS" :markers="markers"
+                        @updateMarkerLayers="updateMarkerLayers" />
                 </keep-alive>
             </b-col>
         </b-row>
@@ -207,6 +129,11 @@ export default Vue.extend({
         this.$emit('setSocket', socket);
 
         socket.connect();
+
+        socket.on(`${this.gameIdSafe}::updatePlayerList`, (playerListString: string) => {
+            const players = JSON.parse(playerListString);
+            this.activePlayers = players;
+        });
 
         socket.on(`${this.gameIdSafe}::markerError`, (message: string) => {
             this.$bvToast.toast(message, {
@@ -318,6 +245,7 @@ export default Vue.extend({
     data() {
         return {
             map: new BattleMap(),
+            activePlayers: [] as Array<string>,
             selectedMarker: undefined as Marker | undefined,
             selectedMarkerRef: undefined as HTMLElement | undefined,
             editingMarker: undefined as Marker | undefined,
@@ -353,6 +281,10 @@ export default Vue.extend({
         };
     },
     methods: {
+        goBack() {
+            this.$emit('goBack');
+        },
+
         updateRatio() {
             const svg = this.$refs.map as any;
 
@@ -661,6 +593,25 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+.top-left-info {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: fit-content;
+    text-align: left;
+}
+
+.players-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.players-list ul {
+    color: var(--bs-blue);
+    padding-left: 1rem;
+    margin-bottom: 0;
+}
+
 .battle-map {
     height: 100%;
     width: 100%;
@@ -740,9 +691,6 @@ export default Vue.extend({
 }
 
 .game-id-text {
-    position: absolute;
-    top: 0px;
-    left: 0;
     background-color: #1b1b1b;
     color: white;
     padding: 0.25rem 0.5rem;
@@ -769,7 +717,21 @@ export default Vue.extend({
     overflow-y: auto;
 }
 
-.results-area > * {
+.results-area>* {
     margin: 1rem 1rem;
+}
+
+.back-button {
+    padding: 0.25rem 0.5rem;
+    background-color: #1b1b1b;
+    color: #eee;
+    font-size: 14px;
+    border-radius: 0 0 6px 0;
+    font-size: 14px;
+}
+
+.back-button:hover {
+    cursor: pointer;
+    background-color: var(--bs-danger);
 }
 </style>

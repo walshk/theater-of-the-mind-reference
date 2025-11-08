@@ -1,14 +1,12 @@
 <template>
     <div id="app">
-        <span v-if="gameJoined" class="back-button" @click="goBack"
-            ><b-icon-arrow-left /> Back</span
-        >
         <BattleMap
             v-if="gameJoined"
             :gameId="gameId"
             :playerId="playerId"
             :enterAsDm="enterAsDm"
             @setSocket="setSocket"
+            @goBack="goBack"
         />
         <JoinGame v-else @joinedGame="joinedGame" />
     </div>
@@ -80,23 +78,5 @@ body {
 
 .fullHeight {
     height: 100%;
-}
-
-.back-button {
-    position: absolute;
-    top: 50px;
-    left: 0;
-    z-index: 1000;
-    padding: 0.25rem 0.5rem;
-    background-color: #1b1b1b;
-    color: #eee;
-    font-size: 14px;
-    border-radius: 0 0 6px 0;
-    font-size: 14px;
-}
-
-.back-button:hover {
-    cursor: pointer;
-    background-color: var(--bs-danger);
 }
 </style>

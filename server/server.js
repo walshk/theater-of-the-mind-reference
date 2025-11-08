@@ -13,7 +13,10 @@ import {
     addNormalRollToLog,
     addDmRollToLog,
     getNormalRolls,
-    getDmRolls
+    getDmRolls,
+    addPlayerToGame,
+    removePlayerFromGame,
+    updatePlayerList
 } from './eventController.js';
 
 import { getDm, setDm, unsetDm } from './dmManager.js'
@@ -75,6 +78,9 @@ io.on('connection', async (socket) => {
     const playerId = decodeURIComponent(socket.handshake.query.playerId);
     const isDm = socket.handshake.query.enterAsDm;
 
+    await addPlayerToGame(playerId, gameId);
+    await updatePlayerList(io, gameId);
+
     if (isDm) {
         console.log(
             `Player "${playerId}" joined game "${gameIdRaw}" as the DM`
@@ -84,7 +90,6 @@ io.on('connection', async (socket) => {
             `Player "${playerId}" joined game "${gameIdRaw}"`
         );
     }
-    
 
     socket.on('normalRoll', async (rollString) => {
         const defaultPlayerId = '++defaultPlayerId++';
@@ -133,6 +138,8 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('disconnect', async () => {
+        await removePlayerFromGame(playerId, gameId);
+        await updatePlayerList(io, gameId);
         if (isDm) {
             console.log(`DM "${playerId}" left game "${gameIdRaw}"`);
             await unsetDm(gameIdRaw);

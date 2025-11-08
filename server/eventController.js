@@ -1,10 +1,50 @@
 import { dbGet, dbGetMultiple, dbSet, dbDelete, dbKeys } from './redis.js';
+import { getDm } from './dmManager.js'
 
 const MARKER_PREFIX = 'marker::';
 
 function buildMarkerKey(gameId, markerString) {
     const markerId = JSON.parse(markerString).id;
     return `${gameId}${MARKER_PREFIX}${markerId}`;
+}
+
+function buildPlayerKey(gameId, playerId) {
+    return `${gameId}::active-player::${playerId}`;
+}
+
+async function getPlayers(gameId = '') {
+    const playerKeys = await dbKeys(`${gameId}::active-player::*`);
+    if (playerKeys.length === 0) {
+        return [];
+    }
+
+    const players = await dbGetMultiple(playerKeys);
+    const dmPlayer = await getDm(gameId.slice(0, -2));
+
+    return players.map((player) => {
+        if (player === dmPlayer) {
+            return `${player} (DM)`;
+        }
+        return player;
+    });
+}
+
+export async function addPlayerToGame(playerId, gameId = '') {
+    console.log(`adding player "${playerId}" to game "${gameId}"`);
+    await dbSet(buildPlayerKey(gameId, playerId), playerId);
+}
+
+export async function removePlayerFromGame(playerId, gameId = '') {
+    console.log(`removing player "${playerId}" from game "${gameId}"`);
+    await dbDelete(buildPlayerKey(gameId, playerId));
+}
+
+export async function updatePlayerList(io, gameId = '') {
+    const players = await getPlayers(gameId);
+
+    const playerListString = JSON.stringify(players);
+    console.log(`updating player list with: ${playerListString}`);
+    io.emit(`${gameId}updatePlayerList`, playerListString);
 }
 
 export async function addMarker(socket, markerString, gameId = '') {
